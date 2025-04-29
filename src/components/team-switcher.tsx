@@ -16,7 +16,8 @@ export function TeamSwitcher() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <div className="h-10 text-center content-center bg-secondary rounded">
+
+        <div className="h-10 text-center content-center bg-primary text-primary-foreground rounded">
         <h1 className="text-bold text-2xl">ECOPOS</h1>
         </div>
       </SidebarMenuItem>

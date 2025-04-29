@@ -1,4 +1,4 @@
 export default function Page() {
-    return <h1>Tax page!</h1>
+    return <h1>Category page!</h1>
 }
   
