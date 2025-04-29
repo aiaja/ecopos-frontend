@@ -76,6 +76,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom color variables */
+  --main-blue: #313DC5;
+  --main-yellow: #FBBF13;
+  --bg-light: #E4E4E4;
+  --bg-subtle: #F8F9FA;
+  --text-dark: #363636;
+  --text-light: #D1D1DB;
 }
 
 .dark {
