@@ -5,6 +5,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-light: var(--light);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -51,6 +52,7 @@
   /* background & text */
   --background: oklch(0.995 0.0026 286.35); /* #FDFDFF  bg-light  */
   --foreground: oklch(0.333 0      0);      /* #363636  text-dark */
+  --light: oklch(0.97 0.0134 281.57); /* #FFFFFF bg-light */
 
   /* surfaces */
   --card:       var(--background);
