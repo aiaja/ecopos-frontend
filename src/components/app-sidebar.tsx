@@ -32,6 +32,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </a>
         ))}
         <NavMain items={data.navMain} />
+        {data.navSettings.map((item, index) => (
+          <a href={item.url} key={index}>    
+          <SidebarMenuButton key={index} tooltip={item.title}>
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
+          </SidebarMenuButton>
+          </a>
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

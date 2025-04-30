@@ -15,6 +15,7 @@ import {
     BookCheck,
     TicketPercent,
     LucideIcon,
+    User2,
   } from "lucide-react"
 
 interface NavItem {
@@ -32,6 +33,7 @@ interface NavItem {
 interface SidebarData {
     navMain: NavItem[];
     navCore: NavItem[];
+    navSettings: NavItem[];
 }
 
 const sidebarData: SidebarData = {
@@ -52,37 +54,27 @@ const sidebarData: SidebarData = {
                     title: "Category",
                     url: "/tenants/inventory/category",
                 },
-                {
-                    icon: Sheet,
-                    title: "Table",
-                    url: "/tenants/inventory/table",
-                },
             ],
         },
         {
-            title: "Settings",
+            title: "Users",
             url: "#",
-            icon: SlidersHorizontal,
+            icon: User2,
             items: [
                 {
                     icon: UserCog,
                     title: "User",
-                    url: "/tenants/settings/user",
+                    url: "/tenants/user-management/user",
                 },
                 {
                     icon: Settings2,
                     title: "Role",
-                    url: "/tenants/settings/role",
+                    url: "/tenants/user-management/role",
                 },
                 {
                     icon: Wrench,
                     title: "Permission",
-                    url: "/tenants/settings/permission",
-                },
-                {
-                    icon: Settings,
-                    title: "General Settings",
-                    url: "/tenants/settings/general",
+                    url: "/tenants/user-management/permission",
                 },
             ],
         },
@@ -120,6 +112,13 @@ const sidebarData: SidebarData = {
             url: "/tenants/voucher",
         },
     ],
+    navSettings: [
+        {
+            icon: Settings,
+            title: "General Settings",
+            url: "/tenants/general-settings",
+        },
+    ]
 };
 
 export default sidebarData;
