@@ -40,13 +40,15 @@ export function ProductsTable() {
 
           {/* Search Bar Row */}
           <TableHeader className="right">
-            <TableCell colSpan={12} className="px-4 py-2">
-              <Search
-                placeholder="Search products..."
-                onSearch={(value) => setSearchQuery(value)}
-                className="max-w-sm"
-              />
-            </TableCell>
+            <TableRow>
+              <TableCell colSpan={12} className="px-4 py-2">
+                <Search
+                  placeholder="Search products..."
+                  onSearch={(value) => setSearchQuery(value)}
+                  className="max-w-sm"
+                />
+              </TableCell>
+            </TableRow>
           </TableHeader>
 
           <TableHeader className="w-full col-span-4">
