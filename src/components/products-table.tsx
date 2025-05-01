@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Search } from "@/components/ui/search";
 import React, { useState } from "react";
 
 import { 
@@ -18,13 +19,36 @@ import products, { Product } from "../datas/products";
 import { SortButton } from "./ui/sort";
 
 export function ProductsTable() {
-  const [sortedProducts, setSortedProducts] = useState<Product[]>(products);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const filteredProducts = products.filter((product) =>
+    product.id.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const [sortedProducts, setSortedProducts] = useState<Product[]>(filteredProducts);
+
+  React.useEffect(() => {
+    setSortedProducts(filteredProducts);
+  }, [searchQuery]);
 
   return (
     <div className="">
       {/* TABLE */}
       <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
         <Table>
+
+          {/* Search Bar Row */}
+          <TableHeader className="right">
+            <TableCell colSpan={12} className="px-4 py-2">
+              <Search
+                placeholder="Search products..."
+                onSearch={(value) => setSearchQuery(value)}
+                className="max-w-sm"
+              />
+            </TableCell>
+          </TableHeader>
+
           <TableHeader className="w-full col-span-4">
             <TableRow>
               <TableHead>ID

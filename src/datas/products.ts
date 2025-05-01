@@ -14,7 +14,7 @@ export interface Product {
 
 const products: Product[] = [
   {
-    id: 1,
+    id: 123,
     category: "Minuman",
     name: "Es Kopi Susu",
     sku: "MN-001",
@@ -27,7 +27,7 @@ const products: Product[] = [
     nonStock: "No",
   },
   {
-    id: 2,
+    id: 234,
     category: "Makanan",
     name: "Roti Bakar Coklat Keju",
     sku: "MK-001",
@@ -40,7 +40,7 @@ const products: Product[] = [
     nonStock: "No",
   },
   {
-    id: 3,
+    id: 345,
     category: "Minuman",
     name: "Matcha Latte Panas",
     sku: "MN-002",
