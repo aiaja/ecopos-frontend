@@ -41,17 +41,14 @@ export function ProductsTable() {
           {/* Search Bar Row */}
           <TableHeader className="w-full col-span-4">
             <TableRow>
-              <TableCell colSpan={12} className="px-4 py-2">
+              <TableHead colSpan={12} className="px-4 py-2">
                 <Search
-                  placeholder="Search products..."
+                  placeholder="Search (ID/Name/Category/SKU)"
                   onSearch={(value) => setSearchQuery(value)}
                   className="max-w-sm"
                 />
-              </TableCell>
+              </TableHead>
             </TableRow>
-          </TableHeader>
-
-          <TableHeader>
             <TableRow>
               <TableHead>ID
                 <SortButton<Product>
