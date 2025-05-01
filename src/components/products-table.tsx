@@ -51,7 +51,7 @@ export function ProductsTable() {
             </TableRow>
           </TableHeader>
 
-          <TableHeader className="w-full col-span-4">
+          <TableHeader>
             <TableRow>
               <TableHead>ID
                 <SortButton<Product>
