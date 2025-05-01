@@ -39,7 +39,7 @@ export function ProductsTable() {
         <Table>
 
           {/* Search Bar Row */}
-          <TableHeader className="right">
+          <TableHeader className="w-full col-span-4">
             <TableRow>
               <TableCell colSpan={12} className="px-4 py-2">
                 <Search
