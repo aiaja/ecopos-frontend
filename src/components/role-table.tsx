@@ -28,7 +28,7 @@ export function RoleTable() {
     <div className="">
       <div className="text-right">
         <Button type="submit">
-          New User
+          New Role
         </Button>
       </div>
 
