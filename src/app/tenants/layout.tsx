@@ -1,3 +1,5 @@
+"use client"
+
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
@@ -9,15 +11,20 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
+import { usePathname } from "next/navigation";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {   
+  const pathname = usePathname();
+  
+    // Set the sidebar to be collapsible if the path is "/tenants/pos"
+    const isCollapsible = pathname === "/tenants/pos"; 
   return (
     <SidebarProvider>
       <AppSidebar />
       <main className="px-4 w-full bg-light">
       <header className="flex h-16 shrink-0 items-center transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
         <SidebarTrigger/>
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex items-cent</header>er gap-2 px-4">
             <Separator
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"

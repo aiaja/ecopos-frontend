@@ -1,4 +1,4 @@
 export default function Page() {
-    return <h1>POS page!</h1>
+    return <h1>Pos page!</h1>
 }
   
