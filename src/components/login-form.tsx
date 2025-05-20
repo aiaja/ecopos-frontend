@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
 export function LoginForm({
   className,
@@ -33,11 +34,8 @@ export function LoginForm({
           <Input id="password" type="password" required />
         </div>
         <div className="flex items-center space-x-2">
-          <input
-            id="remember"
-            type="checkbox"
-            className="w-11 h-6 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 checked:bg-primary relative cursor-pointer transition-colors duration-200 before:absolute before:top-0.5 before:left-[2px] before:bg-white before:border before:border-gray-300 before:rounded-full before:h-5 before:w-5 before:transition-transform checked:before:translate-x-5"
-          />
+          <Switch>
+          </Switch>
           <label htmlFor="remember" className="select-none text-sm font-medium text-gray-900 dark:text-gray-300">
             Remember me?
           </label>
