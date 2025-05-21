@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -7,11 +9,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import MemberDialog from "./MemberDialog";
+import NoteDialog from "./NoteDialog";
+import VoucherDialog from "./VoucherDialog";
 import { useState } from "react";
 
 export function OrderDetails({ orders }: { orders: any[] }) {
-
   const [isMemberDialogOpen, setMemberDialogOpen] = useState(false);
+  const [isNoteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
@@ -36,21 +41,51 @@ export function OrderDetails({ orders }: { orders: any[] }) {
       </Card>
       <Card>
         <CardContent>
+          <div className="">
             <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setMemberDialogOpen(true);
-            }}
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setMemberDialogOpen(true);
+              }}
             >
-            Member
+              Member
             </a>
             <MemberDialog
-            isOpen={isMemberDialogOpen}
-            onClose={() => setMemberDialogOpen(false)}
+              isOpen={isMemberDialogOpen}
+              onClose={() => setMemberDialogOpen(false)}
             />
-          <p>Note</p>
-          <p>Voucher</p>
+          </div>
+          <div className="">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setNoteDialogOpen(true);
+              }}
+            >
+              Note
+              </a>
+              <NoteDialog
+                isOpen={isNoteDialogOpen}
+                onClose={() => setNoteDialogOpen(false)}
+              />
+          </div>
+          <div className="">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setVoucherDialogOpen(true);
+                }}
+              >
+                Voucher
+              </a>
+              <VoucherDialog
+                isOpen={isVoucherDialogOpen}
+                onClose={() => setVoucherDialogOpen(false)}
+              />
+          </div>
         </CardContent>
       </Card>
       <Card>
