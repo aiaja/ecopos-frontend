@@ -94,7 +94,7 @@ const sidebarData: SidebarData = {
         {
             icon: History,
             title: "Selling History",
-            url: "/tenants/selling-history",
+            url: "/tenants/selling-histories",
         },
         {
             icon: HandCoins,
