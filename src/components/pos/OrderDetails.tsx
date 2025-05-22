@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import MemberDialog from "./MemberDialog";
 import NoteDialog from "./NoteDialog";
 import VoucherDialog from "./VoucherDialog";
+import { PlusIcon } from "../common/Plus";
 import { useState } from "react";
 
 export function OrderDetails({ orders }: { orders: any[] }) {
@@ -41,7 +42,8 @@ export function OrderDetails({ orders }: { orders: any[] }) {
       </Card>
       <Card>
         <CardContent>
-          <div className="">
+          <div className="flex items-center justify-between">
+            <p>Member</p>
             <a
               href="#"
               onClick={(e) => {
@@ -49,14 +51,19 @@ export function OrderDetails({ orders }: { orders: any[] }) {
                 setMemberDialogOpen(true);
               }}
             >
-              Member
+            <PlusIcon />
+              
             </a>
             <MemberDialog
               isOpen={isMemberDialogOpen}
               onClose={() => setMemberDialogOpen(false)}
             />
           </div>
-          <div className="">
+          <div className="flex items-center justify-between">
+            <p>
+            Note
+
+            </p>
             <a
               href="#"
               onClick={(e) => {
@@ -64,14 +71,15 @@ export function OrderDetails({ orders }: { orders: any[] }) {
                 setNoteDialogOpen(true);
               }}
             >
-              Note
+              <PlusIcon />
               </a>
               <NoteDialog
                 isOpen={isNoteDialogOpen}
                 onClose={() => setNoteDialogOpen(false)}
               />
           </div>
-          <div className="">
+          <div className="flex items-center justify-between">
+            <p>Voucher</p>
               <a
                 href="#"
                 onClick={(e) => {
@@ -79,7 +87,7 @@ export function OrderDetails({ orders }: { orders: any[] }) {
                   setVoucherDialogOpen(true);
                 }}
               >
-                Voucher
+                <PlusIcon />
               </a>
               <VoucherDialog
                 isOpen={isVoucherDialogOpen}
