@@ -38,7 +38,7 @@ export function CategoriesTable() {
         </Button>
       </div>
       {/* TABLE */}
-      <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+      <div className="mt-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
         <Table>
           {/* Search Bar Row */}
           <TableHeader className="w-full col-span-4">

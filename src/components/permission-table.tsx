@@ -39,7 +39,7 @@ export function PermissionTable() {
   const filteredPermissions = getFilteredPermissions();
 
   return (
-    <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+    <div className="mt-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
       {/* Navbar */}
       <div className="flex gap-4 border-b pb-2">
         <button
