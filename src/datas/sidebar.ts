@@ -83,7 +83,7 @@ const sidebarData: SidebarData = {
         {
             icon: House,
             title: "Dashboard",
-            url: "/tenants/home",
+            url: "/tenants/dashboard",
             isActive: true,
         },
         {
@@ -94,7 +94,7 @@ const sidebarData: SidebarData = {
         {
             icon: History,
             title: "Selling History",
-            url: "/tenants/selling-history",
+            url: "/tenants/selling-histories",
         },
         {
             icon: HandCoins,

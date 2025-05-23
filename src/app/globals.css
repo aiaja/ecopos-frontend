@@ -91,10 +91,10 @@
   /* sidebar inherits the same palette so it feels consistent */
   --sidebar:                  var(--background);
   --sidebar-foreground:       var(--foreground);
-  --sidebar-primary:          var(--foreground);       /* a subtle dark tint */
+  --sidebar-primary:          var(--primary);
   --sidebar-primary-foreground: var(--background);
-  --sidebar-accent:           var(--muted);
-  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-accent:           var(--primary);
+  --sidebar-accent-foreground: var(--light);
   --sidebar-border:           var(--border);
   --sidebar-ring:             var(--ring);
 }

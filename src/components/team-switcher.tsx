@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ChevronsUpDown, Plus } from "lucide-react"
+import ecoposLogoWhite from "@/assets/ecopos-logo-white.png"
 
 import {
   SidebarMenu,
@@ -9,6 +10,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+const containerClass = "h-10 flex flex-wrap gap-4 text-center content-center justify-center bg-primary text-primary-foreground rounded";
 
 export function TeamSwitcher() {
   const { toggleSidebar } = useSidebar()
@@ -16,9 +18,10 @@ export function TeamSwitcher() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-
-        <div className="h-10 text-center content-center bg-primary text-primary-foreground rounded">
-        <h1 className="text-bold text-2xl">ECOPOS</h1>
+        <div className={containerClass}>
+          <div className="h-10 flex flex-wrap gap-4 text-center content-center justify-center bg-primary text-primary-foreground rounded">
+            <img src='/ecopos logo white.png' className="h-6" alt="Ecopos Logo" />
+          </div>
         </div>
       </SidebarMenuItem>
     </SidebarMenu>
