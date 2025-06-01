@@ -1,4 +1,4 @@
-import { RoleTable } from "@/components/role-table";
+import { RoleTable } from "@/components/users/role/role-table";
 
 export default function Home() {
   return (

@@ -1,4 +1,4 @@
-import { CategoriesTable } from "@/components/category-table";
+import { CategoriesTable } from "@/components/inventory/category/category-table";
 
 export default function Home() {
   return (

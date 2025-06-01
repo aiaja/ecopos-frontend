@@ -1,4 +1,4 @@
-import { PermissionTable } from "@/components/permission-table";
+import { PermissionTable } from "@/components/users/permission/permission-table";
 
 export default function PermissionPage() {
   return (

@@ -1,4 +1,4 @@
-import { ProductsTable } from "@/components/products-table";
+import { ProductsTable } from "@/components/inventory/products/products-table";
 
 export default function Home() {
   return (
