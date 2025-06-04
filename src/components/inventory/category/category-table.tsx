@@ -26,14 +26,19 @@ import {
 import { categories, Category } from "../../../datas/categories"; 
 import { SortButton } from "@/components/ui/sort";
 
-export function CategoriesTable() {
+export default function CategoriesTable({
+  categories,
+} : {  categories?: Category[];}) {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const filteredCategories = categories.filter((category) =>
-    category.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
+  const filteredCategories = categories ? categories.filter((category: Category) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      category.name.toLowerCase().includes(query) ||
+      category.id.toString().includes(query)
+    );
+  }) : [];
+
   const [sortedCategories, setSortedCategories] = useState<Category[]>(filteredCategories);
 
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -53,7 +58,7 @@ export function CategoriesTable() {
         <h1 className="text-3xl font-bold">Category</h1>
 
         <Button asChild type="button" className="w-32">
-          <Link href="/tenants/inventory/category/new">New Category</Link>
+          <Link href="/inventory/category/new">New Category</Link>
         </Button>
       </div>
       {/* TABLE */}
@@ -92,7 +97,7 @@ export function CategoriesTable() {
                   <TableCell>{category.name}</TableCell>
                   <TableCell className="text-center">
                     <Button asChild type="button" className="w-18">
-                      <Link href={`/tenants/inventory/category/${category.id}/edit`}>
+                      <Link href={`/inventory/category/${category.id}/edit`}>
                         Edit
                       </Link>
                     </Button>
