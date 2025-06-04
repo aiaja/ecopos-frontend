@@ -12,12 +12,22 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { usePathname } from "next/navigation";
+import { useEffect } from "react"
 
-export default function Layout({ children }: { children: React.ReactNode }) {   
+export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  
-    // Set the sidebar to be collapsible if the path is "/tenants/pos"
-    const isCollapsible = pathname === "/tenants/pos"; 
+
+  // Set the sidebar to be collapsible if the path is "/tenants/pos"
+  const isCollapsible = pathname === "/tenants/pos";
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const outletId = localStorage.getItem("outlet_id");
+    if (!token || !outletId) {
+      window.location.href = "/login";
+    }
+  }, []);
+
   return (
     <SidebarProvider>
       <div className="flex h-screen w-screen overflow-hidden">
@@ -51,4 +61,3 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   )
 }
-

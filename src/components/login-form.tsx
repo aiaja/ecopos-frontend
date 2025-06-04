@@ -38,8 +38,9 @@ export function LoginForm({
       if (response.token) {
         console.log("Login successful", response.data)
         localStorage.setItem("token", response.token)
+        localStorage.setItem("outlet_id", response.user.outlet_id)
 
-        router.push("/tenants/dashboard")
+        router.push("/dashboard")
       } else {
         console.error("Login failed", response.data)
       }
@@ -90,7 +91,7 @@ export function LoginForm({
         </a>
       </div>
 
-      
+
 
       {/* <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
@@ -98,7 +99,7 @@ export function LoginForm({
           Sign up
         </a>
       </div> */}
-      
+
     </form>
   )
 }
