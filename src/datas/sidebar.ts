@@ -47,12 +47,12 @@ const sidebarData: SidebarData = {
                 {
                     icon: PackagePlus,
                     title: "Products",
-                    url: "/tenants/inventory/products",
+                    url: "/inventory/products",
                 },
                 {
                     icon: Group,
                     title: "Category",
-                    url: "/tenants/inventory/category",
+                    url: "/inventory/category",
                 },
             ],
         },
@@ -64,17 +64,17 @@ const sidebarData: SidebarData = {
                 {
                     icon: UserCog,
                     title: "User",
-                    url: "/tenants/user-management/user",
+                    url: "/user-management/user",
                 },
                 {
                     icon: Settings2,
                     title: "Role",
-                    url: "/tenants/user-management/role",
+                    url: "/user-management/role",
                 },
                 {
                     icon: Wrench,
                     title: "Permission",
-                    url: "/tenants/user-management/permission",
+                    url: "/user-management/permission",
                 },
             ],
         },
@@ -83,40 +83,40 @@ const sidebarData: SidebarData = {
         {
             icon: House,
             title: "Dashboard",
-            url: "/tenants/dashboard",
+            url: "/dashboard",
             isActive: true,
         },
         {
             icon: ScanBarcode,
             title: "POS",
-            url: "/tenants/pos",
+            url: "/pos",
         },
         {
             icon: History,
             title: "Selling History",
-            url: "/tenants/selling-histories",
+            url: "/selling-histories",
         },
         {
             icon: HandCoins,
             title: "Payment Method",
-            url: "/tenants/payment-method",
+            url: "/payment-method",
         },
         {
             icon: BookCheck,
             title: "Report",
-            url: "/tenants/reports",
+            url: "/reports",
         },
         {
             icon: TicketPercent,
             title: "Voucher",
-            url: "/tenants/voucher",
+            url: "/voucher",
         },
     ],
     navSettings: [
         {
             icon: Settings,
             title: "General Settings",
-            url: "/tenants/general-settings",
+            url: "/general-settings",
         },
     ]
 };
