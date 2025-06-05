@@ -89,11 +89,15 @@ const updatePaymentMethod = async (outletId: string, id: string, paymentMethod: 
     return response.data;
 }
 
-const deletePaymentMethod = async (outletId: string, id: number): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/outlets/${outletId}/payment-methods/${id}`, {
-        method: 'DELETE',
+export const deletePaymentMethod = async (outletId: string, id: string): Promise<void> => {
+    const token = `Bearer ${localStorage.getItem('token')}`;
+    const response = await axios.delete(`${BASE_URL}/outlets/${outletId}/payment-methods/${id}`, {
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+        },
     });
-    if (!response.ok) {
+    if (response.status !== 200 && response.status !== 204) {
         throw new Error('Failed to delete payment method');
     }
 }

@@ -30,6 +30,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 import { SortButton } from "../ui/sort";
+import DeleteDialog from "./payment-method-delete";
+import { SquarePen, Trash2 } from "lucide-react";
+import { deletePaymentMethod } from "@/services/payment-method";
 
 export function PaymentMethodTable({
   paymentMethods,
@@ -62,6 +65,28 @@ export function PaymentMethodTable({
   useEffect(() => {
     setSortedPaymentMethods(filteredPaymentMethods);
   }, [searchQuery]);
+
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id?: string;
+    name?: string;
+  }>({ open: false });
+
+  const handleDeletePaymentMethod = async (id: string) => {
+    try {
+            const outletId = localStorage.getItem("outlet_id") || "";
+            await deletePaymentMethod(outletId, id);
+            alert("Payment method deleted successfully"); 
+            console.log(`Deleting payment method with ID: ${id}`);
+            setSortedPaymentMethods((prev) =>
+              prev.filter((pm) => pm.id !== id)
+            );
+        } catch (error) {
+            console.error("Error deleting payment method:", error);
+            alert("An error occurred while deleting the payment method.");
+        }
+    setDeleteDialog({ open: false });
+  };
 
   return (
     <div className="">
@@ -112,8 +137,33 @@ export function PaymentMethodTable({
                     <Button asChild type="button" className="w-18">
                       <Link href={`/payment-method/${paymentMethod.id}/edit`}>
                         Edit
+                        <SquarePen className="w-4 h-4" />
                       </Link>
                     </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() =>
+                        setDeleteDialog({
+                          open: true,
+                          id: paymentMethod.id,
+                          name: paymentMethod.name,
+                        })
+                      }
+                      className="cursor-pointer"
+                    >
+                      Delete
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <DeleteDialog
+                      isOpen={deleteDialog.open && deleteDialog.id === paymentMethod.id}
+                      onClose={() => setDeleteDialog({ open: false })}
+                      onConfirm={async () => {
+                        if (deleteDialog.id)
+                          await handleDeletePaymentMethod(deleteDialog.id);
+                      }}
+                      itemName={paymentMethod.name}
+                    />
                   </TableCell>
                 </TableRow>
               ))
