@@ -2,7 +2,7 @@
 
 import { Search } from "@/components/ui/search";
 import React, { useState } from "react";
-import { PaymentMethod, paymentMethods } from "@/datas/paymentMethod";
+import { PaymentMethod} from "@/datas/paymentMethod";
 
 import {
   Table,
@@ -15,67 +15,144 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 
-import { SquarePen, Trash2 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
-export function PaymentMethodTable() {
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+import { SortButton } from "../ui/sort";
+
+export function PaymentMethodTable({
+  paymentMethods,
+} : {  paymentMethods?: PaymentMethod[];}) {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const filtered = paymentMethods.filter(
-    (paymentMethods) =>
-      paymentMethods.id
-        .toString()
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      paymentMethods.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  const filteredPaymentMethods = paymentMethods ? paymentMethods.filter((paymentMethod: PaymentMethod) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      paymentMethod.name.toLowerCase().includes(query) ||
+      paymentMethod.id.toString().includes(query)
+    );
+  }) : [];
+
+  const [sortedPaymentMethods, setSortedPaymentMethods] = useState<PaymentMethod[]>(filteredPaymentMethods);
+
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const itemsPerPage = 5;
+    const totalPages = Math.ceil(sortedPaymentMethods.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedProducts = sortedPaymentMethods.slice(startIndex, endIndex);
+
+  useEffect(() => {
+      setSortedPaymentMethods(filteredPaymentMethods);
+    }, [searchQuery]);
 
   return (
-    // TABLE
-    <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
-      <Table>
+    <div className="">
+      <div className="flex justify-between items-center mt-2 mx-6 mb-6">
+        <h1 className="text-3xl font-bold">Payment Methods</h1>
+
+        <Button asChild type="button">
+            <Link href="/payment-method/new">New Payment Method</Link>
+        </Button>
+      </div>
+      {/* TABLE */}
+      <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
         {/* Search Bar Row */}
-        <TableHeader className="w-full col-span-4">
-          <TableRow>
-            <TableHead colSpan={2} className="px-4 py-4">
-              <Search
-                placeholder="Search (ID/Name)"
-                onSearch={(value) => setSearchQuery(value)}
-                className="max-w-sm"
-              />
-            </TableHead>
-            <TableHead >
-              <div className="justify-end flex">
-                <button className="flex gap-2 justify-center items-center bg-primary hover:bg-primary/80 p-2 text-light rounded-md">
-                  Add Payment Method
-                  <SquarePen className="w-4 h-4" />
-                </button>
-              </div>
-            </TableHead>
-          </TableRow>
-          <TableRow>
-            <TableHead>No</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead className="text-center">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filtered.map((paymentMethod: PaymentMethod) => (
-            <TableRow key={paymentMethod.id}>
-              <TableCell>{paymentMethod.id}</TableCell>
-              <TableCell>{paymentMethod.name}</TableCell>
-              <TableCell className="text-center flex gap-2 justify-center">
-                <button className="flex gap-2 justify-center items-center bg-primary hover:bg-primary/80 p-2 text-light rounded-md">
-                  Edit
-                  <SquarePen className="w-4 h-4" />
-                </button>
-                <button className="flex gap-2 justify-center items-center bg-red-500 hover:bg-red-400 p-2 text-light rounded-md">
-                  Delete
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </TableCell>
+        <Search
+          placeholder="Search (ID/Payment Method Name)"
+          onSearch={(value) => setSearchQuery(value)}
+          className="max-w-sm"
+        />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID
+                <SortButton<PaymentMethod>
+                  data={sortedPaymentMethods}
+                  sortKey="id"
+                  onSort={setSortedPaymentMethods}
+                />
+              </TableHead>
+              <TableHead>Payment Method Name
+                <SortButton<PaymentMethod>
+                    data={sortedPaymentMethods}
+                    sortKey="name"
+                    onSort={setSortedPaymentMethods}
+                  />
+              </TableHead>
+              <TableHead className="text-center">Action</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {sortedPaymentMethods.length > 0 ? (
+              sortedPaymentMethods.map((paymentMethod: PaymentMethod) => (
+                <TableRow key={paymentMethod.id}>
+                  <TableCell>{paymentMethod.id}</TableCell>
+                  <TableCell>{paymentMethod .name}</TableCell>
+                  <TableCell className="text-center">
+                    <Button asChild type="button" className="w-18">
+                      <Link href={`/inventory/category/${paymentMethod.id}/edit`}>
+                        Edit
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">
+                  No payment method found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        {/* Pagination */}
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === i + 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(i + 1);
+                  }}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }
