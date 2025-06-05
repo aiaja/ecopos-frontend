@@ -2,7 +2,7 @@
 
 import { Search } from "@/components/ui/search";
 import React, { useState } from "react";
-import { PaymentMethod} from "@/datas/paymentMethod";
+import { PaymentMethod } from "@/datas/paymentMethod";
 
 import {
   Table,
@@ -33,29 +33,35 @@ import { SortButton } from "../ui/sort";
 
 export function PaymentMethodTable({
   paymentMethods,
-} : {  paymentMethods?: PaymentMethod[];}) {
+}: {
+  paymentMethods?: PaymentMethod[];
+}) {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const filteredPaymentMethods = paymentMethods ? paymentMethods.filter((paymentMethod: PaymentMethod) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      paymentMethod.name.toLowerCase().includes(query) ||
-      paymentMethod.id.toString().includes(query)
-    );
-  }) : [];
+  const filteredPaymentMethods = paymentMethods
+    ? paymentMethods.filter((paymentMethod: PaymentMethod) => {
+        const query = searchQuery.toLowerCase();
+        return (
+          paymentMethod.name.toLowerCase().includes(query) ||
+          paymentMethod.id.toString().includes(query)
+        );
+      })
+    : [];
 
-  const [sortedPaymentMethods, setSortedPaymentMethods] = useState<PaymentMethod[]>(filteredPaymentMethods);
+  const [sortedPaymentMethods, setSortedPaymentMethods] = useState<
+    PaymentMethod[]
+  >(filteredPaymentMethods);
 
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const itemsPerPage = 5;
-    const totalPages = Math.ceil(sortedPaymentMethods.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedProducts = sortedPaymentMethods.slice(startIndex, endIndex);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(sortedPaymentMethods.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = sortedPaymentMethods.slice(startIndex, endIndex);
 
   useEffect(() => {
-      setSortedPaymentMethods(filteredPaymentMethods);
-    }, [searchQuery]);
+    setSortedPaymentMethods(filteredPaymentMethods);
+  }, [searchQuery]);
 
   return (
     <div className="">
@@ -63,7 +69,7 @@ export function PaymentMethodTable({
         <h1 className="text-3xl font-bold">Payment Methods</h1>
 
         <Button asChild type="button">
-            <Link href="/payment-method/new">New Payment Method</Link>
+          <Link href="/payment-method/new">New Payment Method</Link>
         </Button>
       </div>
       {/* TABLE */}
@@ -77,19 +83,21 @@ export function PaymentMethodTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID
+              <TableHead>
+                ID
                 <SortButton<PaymentMethod>
                   data={sortedPaymentMethods}
                   sortKey="id"
                   onSort={setSortedPaymentMethods}
                 />
               </TableHead>
-              <TableHead>Payment Method Name
+              <TableHead>
+                Payment Method Name
                 <SortButton<PaymentMethod>
-                    data={sortedPaymentMethods}
-                    sortKey="name"
-                    onSort={setSortedPaymentMethods}
-                  />
+                  data={sortedPaymentMethods}
+                  sortKey="name"
+                  onSort={setSortedPaymentMethods}
+                />
               </TableHead>
               <TableHead className="text-center">Action</TableHead>
             </TableRow>
@@ -99,10 +107,10 @@ export function PaymentMethodTable({
               sortedPaymentMethods.map((paymentMethod: PaymentMethod) => (
                 <TableRow key={paymentMethod.id}>
                   <TableCell>{paymentMethod.id}</TableCell>
-                  <TableCell>{paymentMethod .name}</TableCell>
+                  <TableCell>{paymentMethod.name}</TableCell>
                   <TableCell className="text-center">
                     <Button asChild type="button" className="w-18">
-                      <Link href={`/inventory/category/${paymentMethod.id}/edit`}>
+                      <Link href={`/payment-method/${paymentMethod.id}/edit`}>
                         Edit
                       </Link>
                     </Button>
@@ -143,11 +151,12 @@ export function PaymentMethodTable({
               </PaginationItem>
             ))}
 
-
             <PaginationItem>
               <PaginationNext
                 href="#"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
               />
             </PaginationItem>
           </PaginationContent>

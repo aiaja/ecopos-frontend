@@ -32,6 +32,7 @@ export function PaymentMethodForm({
     id: "",
     name: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchPaymentMethod = async () => {
@@ -55,6 +56,8 @@ export function PaymentMethodForm({
           }
         } catch (error) {
           console.error("Error fetching payment method:", error);
+        } finally {
+          setLoading(false);
         }
       }
     };
@@ -107,7 +110,7 @@ export function PaymentMethodForm({
     }
   }
 
-  if (mode === "edit" && !defaultValues.name) {
+  if (mode === "edit" && loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <p>Loading...</p>

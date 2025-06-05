@@ -9,19 +9,34 @@ type PaymentMethod = {
 
 
 const getPaymentMethods = async (outletId: string): Promise<PaymentMethod[]> => {
-    const response = await fetch(`${BASE_URL}/outlets/${outletId}/payment-methods`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-        },
+    const rawToken = localStorage.getItem('token');
+    if (!rawToken) {
+        throw new Error('User is not authenticated. Token not found.');
     }
-    );
-    if (response.status === 500) {
-        throw new Error('Failed to fetch payment methods');
+    // Optionally, check if the token is expired here and refresh if needed
+
+    const token = `Bearer ${rawToken}`;
+    try {
+        const response = await axios.get(`${BASE_URL}/outlets/${outletId}/payment-methods`, {
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json',
+            },
+        });
+        // Adjust according to your API response structure
+        if (response.data && Array.isArray(response.data.data)) {
+            return response.data.data;
+        } else if (Array.isArray(response.data)) {
+            return response.data;
+        } else {
+            throw new Error('Unexpected API response structure');
+        }
+    } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+            throw new Error('Unauthorized: Invalid or expired token.');
+        }
+        throw new Error(error.message || 'Failed to fetch payment methods');
     }
-    const data = await response.json();
-    return data.payment_methods;
 }
 
 const getPaymentMethodById = async (outletId:string, id: string): Promise<PaymentMethod> => {
@@ -32,48 +47,46 @@ const getPaymentMethodById = async (outletId:string, id: string): Promise<Paymen
             'Content-Type': 'application/json',
         },
     });
-    if (!response.data || !response.data.payment_method) {
+    if (!response.data) {
         throw new Error('Payment method not found');
     }
     const data = await response.data;
-    return data.payment_method;
+    return data.data;
 
 }
 
 const createPaymentMethod = async (outletId: string, paymentMethod: Omit<PaymentMethod, 'id'>): Promise<PaymentMethod> => {
     const token = `Bearer ${localStorage.getItem('token')}`;
-    const response = await axios.post(`${BASE_URL}/outlets/${outletId}/payment-methods`, {
-        ...paymentMethod,
-        outlet_id: outletId,
-    }, {
-        headers: {
-            'Authorization': token,
-            'Content-Type': 'application/json',
-        },
-    });
-    if (!response.data || !response.data.payment_method) {
+    const response = await axios.post(`${BASE_URL}/outlets/${outletId}/payment-methods`, 
+        paymentMethod, 
+        {
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json',
+            },
+        }
+    );
+    const data = await response.data;
+    if (!data) {
         throw new Error('Failed to create payment method');
     }
-    const data = response.data;
-    return data.payment_method;
+    return response.data;
 }
 
 const updatePaymentMethod = async (outletId: string, id: string, paymentMethod: Omit<PaymentMethod, 'id'>): Promise<PaymentMethod> => {
     const token = `Bearer ${localStorage.getItem('token')}`;
-    const response = await axios.put(`${BASE_URL}/outlets/${outletId}/payment-methods/${id}`, {
-        ...paymentMethod,
-        outlet_id: outletId,
-    }, {
+    const response = await axios.put(`${BASE_URL}/outlets/${outletId}/payment-methods/${id}`, paymentMethod,
+    {
         headers: {
             'Authorization': token,
             'Content-Type': 'application/json',
         },
     });
-    if (!response.data || !response.data.payment_method) {
+    const data = await response.data;
+    if (!data) {
         throw new Error('Failed to update payment method');
     }
-    const data = await response.data;
-    return data.payment_method;
+    return response.data;
 }
 
 const deletePaymentMethod = async (outletId: string, id: number): Promise<void> => {
