@@ -133,7 +133,7 @@ export function PaymentMethodTable({
                 <TableRow key={paymentMethod.id}>
                   <TableCell>{paymentMethod.id}</TableCell>
                   <TableCell>{paymentMethod.name}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center flex gap-2 justify-center">
                     <Button asChild type="button" className="w-18">
                       <Link href={`/payment-method/${paymentMethod.id}/edit`}>
                         Edit
