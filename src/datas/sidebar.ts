@@ -64,17 +64,17 @@ const sidebarData: SidebarData = {
                 {
                     icon: UserCog,
                     title: "User",
-                    url: "/management/user",
+                    url: "/user-management/user",
                 },
                 {
                     icon: Settings2,
                     title: "Role",
-                    url: "/management/role",
+                    url: "/user-management/role",
                 },
                 {
                     icon: Wrench,
                     title: "Permission",
-                    url: "/management/permission",
+                    url: "/user-management/permission",
                 },
             ],
         },
