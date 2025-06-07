@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import { ProductCard } from "@/datas/productCards";
 import { ProductCardsService } from "@/services/pos/productCards";
 import { ProductCards } from "@/components/pos/ProductCards";
-import ProductCardsPage from "./(product-cards)/page";
 
 export default function Home() {
 
@@ -53,7 +52,7 @@ export default function Home() {
   return (
     <div className="flex h-screen">
       {/* Left Section: Product Cards */}
-      <ProductCardsPage />
+      <ProductCards productCards={productCards} />
 
       {/* Right Section: Order Details */}
       <div className="w-[400px]">
