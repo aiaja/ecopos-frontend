@@ -15,7 +15,6 @@ import {
 import { Button } from "../../ui/button";
 import { ProductCardsService } from "@/services/pos/productCards";
 import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 export function ProductCards({
   productCards,
