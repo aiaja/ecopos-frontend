@@ -11,35 +11,50 @@ import { Button } from "@/components/ui/button";
 import MemberDialog from "./MemberDialog";
 import NoteDialog from "./NoteDialog";
 import VoucherDialog from "./VoucherDialog";
-import { PlusIcon } from "../common/Plus";
-import { useState } from "react";
+import { PlusIcon } from "@/components/common/Plus";
+import CartCards from "./CartCards";
+
+
+import { CartService } from "@/services/pos/cart";
+import { useEffect, useState } from "react";
+import { CartItem } from "@/datas/orderDetails";
+import { cartSchema } from "@/datas/orderDetails";
+
 
 export function OrderDetails({ orders }: { orders: any[] }) {
   const [isMemberDialogOpen, setMemberDialogOpen] = useState(false);
   const [isNoteDialogOpen, setNoteDialogOpen] = useState(false);
   const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
 
+  const [cartItem, setCartItem] = useState<CartItem[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+  
+    const fetchCartItems = async () => {
+      try {
+        const response = await CartService.getCartItems(localStorage.getItem("outlet_id") || "");
+        if (response) {
+          setCartItem(response as CartItem[]);
+        } else {
+          console.error("Failed to fetch cart items");
+        }
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  
+    useEffect(() => {
+      fetchCartItems();
+    }, []);
+  
+    if (loading) {
+      return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    }
+
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="border-b-2 p-2">Current Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {orders.length === 0 ? (
-            <p className="text-gray-500">No items</p>
-          ) : (
-            <ul>
-              {orders.map((order) => (
-                <li key={order.id} className="flex justify-between">
-                  <span>{order.product}</span>
-                  <span>{order.quantity}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <CartCards cartItems={cartItem} />
       <Card>
         <CardContent>
           <div className="flex items-center justify-between">
