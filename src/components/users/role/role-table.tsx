@@ -52,7 +52,7 @@ export function RoleTable() {
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">
         <h1 className="text-3xl font-bold">Roles</h1>
         <Button asChild type="button" className="w-32">
-          <Link href="/tenants/user-management/role/new">New Role</Link>
+          <Link href="/user-management/role/new">New Role</Link>
         </Button>
       </div>
 

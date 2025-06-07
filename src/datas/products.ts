@@ -1,148 +1,62 @@
 import { z } from "zod";
 
 export const productSchema = z.object({
-  heroImages: z.any().optional(),
+  hero_images: z.any().optional(),
   name: z.string().min(2, { message: "Name is required" }),
-  categoryId: z.string().min(1, { message: "Category is required" }),
+  category_id: z.string().nullable(),
   stock: z.coerce.number().min(0, { message: "Stock is required" }),
   unit: z.string().optional(),
-  initialPrice: z.coerce.number().min(0, { message: "Initial price is required" }),
-  sellingPrice: z.coerce.number().min(0, { message: "Selling price is required" }),
-  nonStock: z.boolean().optional(),
+  initial_price: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Initial price must be a number" }).transform(val => parseFloat(val).toString()),
+  selling_price: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Selling price must be a number" }).transform(val => parseFloat(val).toString()),
+  is_non_stock: z.boolean().optional(),
+  outlet_id: z.string().optional(),
+  id: z.string().optional(),
+  // created_at: z.date().optional(),
+  // updated_at: z.date().nullable().optional(),
+  net_profit: z.number().optional(),
+  category: z.object({
+    id: z.string(),
+    name: z.string(),
+  }).optional(),
 });
 
 export interface Product {
-  id: number;
-  heroImages?: FileList | null;
-  categoryId: string;
-  category: string;
+  id: string;
+  outlet_id: string;
+  category_id: string | null;
   name: string;
   stock: number;
-  unit?: string;
-  initialPrice: number;
-  sellingPrice: number;
-  netProfit: number;
-  nonStock?: boolean;
+  is_non_stock: boolean;
+  initial_price: string;
+  selling_price: string;
+  unit: string | null;
+  hero_images: string | null;
+  // created_at: string;
+  // updated_at: string | null;
+  net_profit?: number;
+  category: {
+    id: string;
+    name: string;
+  };
 }
 
-const products: Product[] = [
-  {
-    id: 123,
-    heroImages: undefined,
-    categoryId: '1',
-    category: 'Minuman',
-    name: 'Es Kopi Susu',
-    stock: 30,
-    unit: 'pcs',
-    initialPrice: 8000,
-    sellingPrice: 15000,
-    netProfit: 7000,
-    nonStock: false,
-  },
-  {
-    id: 234,
-    heroImages: undefined,
-    categoryId: '2',
-    category: 'Makanan',
-    name: 'Roti Bakar Coklat Keju',
-    stock: 20,
-    unit: 'pcs',
-    initialPrice: 10000,
-    sellingPrice: 18000,
-    netProfit: 8000,
-    nonStock: false,
-  },
-  {
-    id: 345,
-    heroImages: undefined,
-    categoryId: '1',
-    category: 'Minuman',
-    name: 'Matcha Latte Panas',
-    stock: 25,
-    unit: 'pcs',
-    initialPrice: 9000,
-    sellingPrice: 17000,
-    netProfit: 8000,
-    nonStock: false,
-  },
-  {
-    id: 456,
-    heroImages: undefined,
-    categoryId: '1',
-    category: 'Minuman',
-    name: 'Es Kopi Susu',
-    stock: 30,
-    unit: 'pcs',
-    initialPrice: 8000,
-    sellingPrice: 15000,
-    netProfit: 7000,
-    nonStock: false,
-  },
-  {
-    id: 567,
-    heroImages: undefined,
-    categoryId: '2',
-    category: 'Makanan',
-    name: 'Roti Bakar Coklat Keju',
-    stock: 20,
-    unit: 'pcs',
-    initialPrice: 10000,
-    sellingPrice: 18000,
-    netProfit: 8000,
-    nonStock: false,
-  },
-  {
-    id: 678,
-    heroImages: undefined,
-    categoryId: '1',
-    category: 'Minuman',
-    name: 'Matcha Latte Panas',
-    stock: 25,
-    unit: 'pcs',
-    initialPrice: 9000,
-    sellingPrice: 17000,
-    netProfit: 8000,
-    nonStock: false,
-  },
-{
-    id: 789,
-    heroImages: undefined,
-    categoryId: '1',
-    category: 'Minuman',
-    name: 'Es Kopi Susu',
-    stock: 30,
-    unit: 'pcs',
-    initialPrice: 8000,
-    sellingPrice: 15000,
-    netProfit: 7000,
-    nonStock: false,
-  },
-  {
-    id: 890,
-    heroImages: undefined,
-    categoryId: '2',
-    category: 'Makanan',
-    name: 'Roti Bakar Coklat Keju',
-    stock: 20,
-    unit: 'pcs',
-    initialPrice: 10000,
-    sellingPrice: 18000,
-    netProfit: 8000,
-    nonStock: false,
-  },
-  {
-    id: 987,
-    heroImages: undefined,
-    categoryId: '1',
-    category: 'Minuman',
-    name: 'Matcha Latte Panas',
-    stock: 25,
-    unit: 'pcs',
-    initialPrice: 9000,
-    sellingPrice: 17000,
-    netProfit: 8000,
-    nonStock: false,
-  },
-];
+export function netProfit(product: Product): number | undefined {
+  const initialPrice = parseFloat(product.initial_price);
+  const sellingPrice = parseFloat(product.selling_price);
 
-export default products;
+  if (!isNaN(initialPrice) && !isNaN(sellingPrice)) {
+    return sellingPrice - initialPrice;
+  }
+  else {
+    return undefined;
+  }
+}
+
+
+  // name: z.string().min(2, { message: "Name is required" }),
+  // categoryId: z.string().min(1, { message: "Category is required" }),
+  // stock: z.coerce.number().min(0, { message: "Stock is required" }),
+  // unit: z.string().optional(),
+  // initialPrice: z.coerce.number().min(0, { message: "Initial price is required" }),
+  // sellingPrice: z.coerce.number().min(0, { message: "Selling price is required" }),
+  // nonStock: z.boolean().optional(),
