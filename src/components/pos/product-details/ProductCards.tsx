@@ -1,24 +1,28 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ProductCard } from "@/datas/productCards";
+import { addToCartSchema, ProductCard } from "@/datas/productCards";
 import { Search } from "@/components/ui/search";
-import { Input } from "../ui/input";
-import { ScrollArea } from "../ui/scroll-area";
-import { Separator } from "../ui/separator";
+import { ScrollArea } from "../../ui/scroll-area";
+import { Separator } from "../../ui/separator";
+import { z } from "zod";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
+} from "../../ui/card";
+import { Button } from "../../ui/button";
+import { ProductCardsService } from "@/services/pos/productCards";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function ProductCards({
   productCards,
 }: {
   productCards: ProductCard[];
 }) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const filteredProductCards = productCards
@@ -37,6 +41,30 @@ export function ProductCards({
   useEffect(() => {
     setSortedProductCards(filteredProductCards);
   }, [searchQuery]);
+
+  async function handleAddToCart(values: z.infer<typeof addToCartSchema>) {
+      try {
+        const addToCart = {
+          product_id: values.productId,
+          quantity: values.quantity,
+          outlet_id: localStorage.getItem("outlet_id") || "",
+        };
+
+        const response = await ProductCardsService.addToCart(
+          localStorage.getItem("outlet_id") || "",
+          addToCart
+        );
+        if (response) {
+          alert("Product added to cart successfully");
+        } else {
+          alert("Failed to add product to cart");
+        }
+        router.refresh();
+      } catch (error) {
+        console.error("Error adding product to cart:", error);
+        alert("An error occurred while processing your request.");
+      }
+    }
 
   return (
     <div>
@@ -71,7 +99,16 @@ export function ProductCards({
                     </p>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" className="w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() =>
+                        handleAddToCart({
+                          productId: productCard.id.toString(),
+                          quantity: 1,
+                        })
+                      }
+                    >
                       Add to Cart
                     </Button>
                   </CardFooter>

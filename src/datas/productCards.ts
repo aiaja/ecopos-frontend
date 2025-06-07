@@ -7,8 +7,13 @@ export const paymentMethodSchema = z.object({
     stock: z.number().min(0, { message: "Stock must be a positive number" }),
     selling_price: z.number().min(0, { message: "Selling price must be a positive number" }),
 });
-  
-  // Define an interface for orders
+
+export const addToCartSchema = z.object({
+    productId: z.string().min(1, { message: "Product ID is required" }),
+    quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
+});
+
+// Define an interface for orders
 export interface Order {
     id: number;
     product: string;
@@ -25,13 +30,12 @@ export interface ProductCard {
     selling_price: number;
 }
 
-const productCards: ProductCard[] = [
-    { id: "1", name: "pilmo", hero_image: "/next.svg", stock: 999, selling_price: 10000 },
-    { id: "2", name: "kopop", hero_image: "/next.svg", stock: 13, selling_price: 15000 },
-    { id: "3", name: "apaya", hero_image: "/next.svg", stock: 7000, selling_price: 20000 },
-];
+export interface AddToCart {
+    productId: string;
+    quantity: number;
+}
   
   // Mock order data
   const mockOrders: Order[] = []; // Replace with actual order data
 
-  export { productCards, mockOrders };
+  export { mockOrders };
