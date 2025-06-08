@@ -3,12 +3,8 @@
 import {
   Card,
   CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import MemberDialog from "./MemberDialog";
 import NoteDialog from "./NoteDialog";
 import VoucherDialog from "./VoucherDialog";
 import { PlusIcon } from "@/components/common/Plus";
@@ -17,10 +13,8 @@ import CartCards from "./CartCards";
 import { CartService } from "@/services/pos/cart";
 import { useEffect, useState } from "react";
 import { CartItem } from "@/datas/orderDetails";
-import { cartSchema } from "@/datas/orderDetails";
 
 export function OrderDetails({ orders }: { orders: any[] }) {
-  const [isMemberDialogOpen, setMemberDialogOpen] = useState(false);
   const [isNoteDialogOpen, setNoteDialogOpen] = useState(false);
   const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
 
@@ -70,22 +64,6 @@ export function OrderDetails({ orders }: { orders: any[] }) {
       <CartCards cartItems={cartItem} />
       <Card>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <p>Member</p>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setMemberDialogOpen(true);
-              }}
-            >
-              <PlusIcon />
-            </a>
-            <MemberDialog
-              isOpen={isMemberDialogOpen}
-              onClose={() => setMemberDialogOpen(false)}
-            />
-          </div>
           <div className="flex items-center justify-between">
             <p>Note</p>
             <a
@@ -148,9 +126,14 @@ export function OrderDetails({ orders }: { orders: any[] }) {
           </div>
         </CardContent>
       </Card>
-      <Button className="w-full" variant="default">
-        Proceed to Payment
-      </Button>
+      <div className="flex flex-row justify-between gap-4">
+        <Button className="flex-1" variant="default">
+          Open Bills
+        </Button>
+        <Button className="flex-1" variant="default">
+          Proceed to Payment
+        </Button>
+      </div>
     </div>
   );
 }
