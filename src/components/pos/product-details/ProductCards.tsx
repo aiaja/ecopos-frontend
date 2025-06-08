@@ -106,6 +106,7 @@ export function ProductCards({
                           productId: productCard.id.toString(),
                           quantity: 1,
                         })
+                        .then(() => window.location.reload())
                       }
                     >
                       Add to Cart

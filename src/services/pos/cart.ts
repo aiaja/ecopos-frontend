@@ -55,6 +55,7 @@ const deleteCartItem = async (outletId: string, id: number): Promise<void> => {
     }
 }
 
+
 const clearCart = async (outletId: string): Promise<void> => {
     const response = await fetch(`${BASE_URL}/outlets/${outletId}/cart`, {
         method: 'DELETE',
