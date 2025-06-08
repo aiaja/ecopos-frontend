@@ -55,7 +55,18 @@ export default function CartCards( {cartItems}: { cartItems?: CartItem[] }) {
         console.error("Error deleting cart item:", error);
         alert("An error occurred while deleting the cart item.");
       }
-      setDeleteDialog({ open: false });
+    };
+
+    const handleClearCart = async () => {
+      try {
+        const outletId = localStorage.getItem("outlet_id") || "";
+        await CartService.clearCart(outletId);
+        alert("Cart cleared successfully");
+        console.log("Clearing cart");
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+        alert("An error occurred while clearing the cart.");
+      }
     };
 
   return (
@@ -72,11 +83,15 @@ export default function CartCards( {cartItems}: { cartItems?: CartItem[] }) {
                 <TableHead>Qty</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>
-                  <Button
-                    variant="destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                   <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          await handleClearCart();
+                          window.location.reload();
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                 </TableHead>
               </TableRow>
             </TableHeader>

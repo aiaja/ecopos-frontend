@@ -61,8 +61,13 @@ export const deleteCartItem = async (outletId: string, id: string): Promise<void
 }
 
 const clearCart = async (outletId: string): Promise<void> => {
+    const token = `Bearer ${localStorage.getItem('token')}`;
     const response = await fetch(`${BASE_URL}/outlets/${outletId}/cart`, {
         method: 'DELETE',
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+        },
     });
     if (!response.ok) {
         throw new Error('Failed to clear cart');
