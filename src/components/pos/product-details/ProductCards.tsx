@@ -42,28 +42,28 @@ export function ProductCards({
   }, [searchQuery]);
 
   async function handleAddToCart(values: z.infer<typeof addToCartSchema>) {
-      try {
-        const addToCart = {
-          product_id: values.productId,
-          quantity: values.quantity,
-          outlet_id: localStorage.getItem("outlet_id") || "",
-        };
+    try {
+      const addToCart = {
+        product_id: values.productId,
+        quantity: values.quantity,
+        outlet_id: localStorage.getItem("outlet_id") || "",
+      };
 
-        const response = await ProductCardsService.addToCart(
-          localStorage.getItem("outlet_id") || "",
-          addToCart
-        );
-        if (response) {
-          alert("Product added to cart successfully");
-        } else {
-          alert("Failed to add product to cart");
-        }
-        router.refresh();
-      } catch (error) {
-        console.error("Error adding product to cart:", error);
-        alert("An error occurred while processing your request.");
+      const response = await ProductCardsService.addToCart(
+        localStorage.getItem("outlet_id") || "",
+        addToCart
+      );
+      if (response) {
+        alert("Product added to cart successfully");
+      } else {
+        alert("Failed to add product to cart");
       }
+      router.refresh();
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      alert("An error occurred while processing your request.");
     }
+  }
 
   return (
     <div>
@@ -78,35 +78,36 @@ export function ProductCards({
         <Separator />
         <ScrollArea className="p-4">
           <div className="gap-4 flex flex-col">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {sortedProductCards.map((productCard) => (
-                <Card key={productCard.id}>
-                  <CardHeader>
-                    <CardTitle>{productCard.name}</CardTitle>
+                <Card key={productCard.id} className="min-w-0 p-2">
+                  <CardHeader className="px-2 pt-2">
+                    <CardTitle className="text-sm truncate">
+                      {productCard.name}
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-2">
                     <img
                       src={productCard.hero_image}
                       alt={productCard.name}
-                      className="object-cover pb-6"
+                      className="object-cover h-10 w-full rounded"
                     />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs text-gray-500 mb-1">
                       Stock: {productCard.stock}
                     </p>
-                    <p className="text-primary/75 font-bold">
+                    <p className="text-primary/75 font-bold text-sm">
                       IDR {productCard.selling_price}
                     </p>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="w-full px-2">
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full h-8 text-xs"
                       onClick={() =>
                         handleAddToCart({
                           productId: productCard.id.toString(),
                           quantity: 1,
-                        })
-                        .then(() => window.location.reload())
+                        }).then(() => window.location.reload())
                       }
                     >
                       Add to Cart
