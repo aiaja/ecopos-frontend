@@ -15,6 +15,15 @@ import {
 import { Button } from "../../ui/button";
 import { ProductCardsService } from "@/services/pos/productCards";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CategoryService } from "@/services/category";
+import { Category } from "@/datas/categories";
 
 export function ProductCards({
   productCards,
@@ -65,15 +74,84 @@ export function ProductCards({
     }
   }
 
+  const handleProductByCategory = async (categoryId: string) => {
+    try {
+      const products = await ProductCardsService.getProductByCategory(
+        localStorage.getItem("outlet_id") || "",
+        categoryId
+      );
+      // Map ProductByCategory[] to ProductCard[] and ensure 'id' is a string
+      const mappedProducts = products.map((product: any) => ({
+        ...product,
+        id: product.id?.toString() ?? "",
+      }));
+      setSortedProductCards(mappedProducts);
+    } catch (error) {
+      console.error("Error fetching products by category:", error);
+      alert("An error occurred while fetching products.");
+    }
+  };
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const fetchCategories = async () => {
+    try {
+      const response = await CategoryService.getCategories(
+        localStorage.getItem("outlet_id") || ""
+      );
+      if (response) {
+        setCategories(response as Category[]);
+      } else {
+        console.error("Failed to fetch categories");
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   return (
     <div>
-      <div className="flex-1 border-r">
-        <div className="p-4">
-          <Search
-            placeholder="Search (Product Name)"
-            onSearch={(value) => setSearchQuery(value)}
-            className="max-w-sm"
-          />
+      <div className="flex-1 border-r ">
+        <div className="w-full flex flex-row items-center justify-between">
+          <div className="flex-1 p-4">
+            <Search
+              placeholder="Search (Product Name)"
+              onSearch={(value) => setSearchQuery(value)}
+              className="max-w-sm"
+            />
+          </div>
+          <div className="flex-1 px-4">
+            <Select
+              onValueChange={(categoryId) => {
+                if (categoryId === "all") {
+                  setSortedProductCards(filteredProductCards);
+                } else {
+                  handleProductByCategory(categoryId);
+                }
+              }}
+              disabled={loading || categories.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={loading ? "Loading..." : "Select Category"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <Separator />
         <ScrollArea className="p-4">
