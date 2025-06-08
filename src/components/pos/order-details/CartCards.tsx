@@ -48,7 +48,7 @@ export default function CartCards( {cartItems}: { cartItems?: CartItem[] }) {
     const handleDeleteCartItems = async (id: string) => {
       try {
         const outletId = localStorage.getItem("outlet_id") || "";
-        await CartService.deleteCartItem(outletId, Number(id));
+        await CartService.deleteCartItem(outletId,id);
         alert("Cart item deleted successfully");
         console.log(`Deleting cart item with ID: ${id}`);
       } catch (error) {
@@ -112,8 +112,8 @@ export default function CartCards( {cartItems}: { cartItems?: CartItem[] }) {
                         className="hover:bg-red-500 hover:text-white"
                         onClick={async () => {
                           await handleDeleteCartItems(item.id);
+                          window.location.reload();
                         }}
-                        
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
