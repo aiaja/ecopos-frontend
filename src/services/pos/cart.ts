@@ -46,18 +46,28 @@ const updateCartItem = async (outletId: string, id: string, item: Partial<CartIt
     return data.cartItem;
 }
 
-const deleteCartItem = async (outletId: string, id: number): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/outlets/${outletId}/cart/${id}`, {
-        method: 'DELETE',
+
+export const deleteCartItem = async (outletId: string, id: string): Promise<void> => {
+    const token = `Bearer ${localStorage.getItem('token')}`;
+    const response = await axios.delete(`${BASE_URL}/outlets/${outletId}/cart/${id}`, {
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+        },
     });
-    if (!response.ok) {
+    if (response.status !== 200 && response.status !== 204) {
         throw new Error('Failed to delete cart item');
     }
 }
 
 const clearCart = async (outletId: string): Promise<void> => {
+    const token = `Bearer ${localStorage.getItem('token')}`;
     const response = await fetch(`${BASE_URL}/outlets/${outletId}/cart`, {
         method: 'DELETE',
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+        },
     });
     if (!response.ok) {
         throw new Error('Failed to clear cart');

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const paymentMethodSchema = z.object({
+export const ProductCardSchema = z.object({
     id: z.string(),
     name: z.string().min(2, { message: "Name is required" }),
     hero_image: z.string().min(2, { message: "Hero image is required" }),
@@ -13,15 +13,7 @@ export const addToCartSchema = z.object({
     quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
 });
 
-// Define an interface for orders
-export interface Order {
-    id: number;
-    product: string;
-    quantity: number;
-    price: number;
-  }
-  
-  // Mock product data
+// Mock product data
 export interface ProductCard {
     id: string;
     name: string;
@@ -34,6 +26,14 @@ export interface AddToCart {
     productId: string;
     quantity: number;
 }
+
+// Define an interface for orders
+export interface Order {
+    id: number;
+    product: string;
+    quantity: number;
+    price: number;
+  }
   
   // Mock order data
   const mockOrders: Order[] = []; // Replace with actual order data

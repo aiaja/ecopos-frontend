@@ -15,6 +15,7 @@ import {
     BookCheck,
     TicketPercent,
     LucideIcon,
+    Wallet,
     User2,
   } from "lucide-react"
 
@@ -92,12 +93,17 @@ const sidebarData: SidebarData = {
             url: "/pos",
         },
         {
+            icon: HandCoins,
+            title: "Open Bills",
+            url: "/open-bills",
+        },
+        {
             icon: History,
             title: "Selling History",
             url: "/selling-histories",
         },
         {
-            icon: HandCoins,
+            icon: Wallet,
             title: "Payment Method",
             url: "/payment-method",
         },
