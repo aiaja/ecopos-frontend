@@ -48,7 +48,7 @@ export default function ProductsTable({ products }: { products?: Product[] }) {
     const query = searchQuery.toLowerCase();
     return netProfitProducts.filter((product) => {
       return (
-        product.id.toString().includes(query) ||
+        (product.id !== undefined && product.id.toString().includes(query)) ||
         product.name.toLowerCase().includes(query) ||
         (product.category?.name || "").toLowerCase().includes(query)
       );

@@ -1,62 +1,58 @@
 import { z } from "zod";
+import { Category } from "./categories"; // Kita juga butuh tipe Category di sini
 
-export const productSchema = z.object({
-  hero_images: z.any().optional(),
-  name: z.string().min(2, { message: "Name is required" }),
-  category_id: z.string().nullable(),
-  stock: z.coerce.number().min(0, { message: "Stock is required" }),
-  unit: z.string().optional(),
-  initial_price: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Initial price must be a number" }).transform(val => parseFloat(val).toString()),
-  selling_price: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Selling price must be a number" }).transform(val => parseFloat(val).toString()),
-  is_non_stock: z.boolean().optional(),
-  outlet_id: z.string().optional(),
-  id: z.string().optional(),
-  // created_at: z.date().optional(),
-  // updated_at: z.date().nullable().optional(),
-  net_profit: z.number().optional(),
-  category: z.object({
-    id: z.string(),
-    name: z.string(),
-  }).optional(),
-});
+// Konstanta untuk validasi gambar
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-export interface Product {
-  id: string;
-  outlet_id: string;
-  category_id: string | null;
+export type Product = {
+  id?: string;
   name: string;
   stock: number;
-  is_non_stock: boolean;
-  initial_price: string;
-  selling_price: string;
-  unit: string | null;
-  hero_images: string | null;
-  // created_at: string;
-  // updated_at: string | null;
-  net_profit?: number;
-  category: {
-    id: string;
-    name: string;
-  };
-}
+  initial_price: number;
+  selling_price: number;
+  unit: string;
+  hero_image?: string | null;
+  outlet_id?: string;
+  category_id: string;
+  category?: Category;
+};
 
-export function netProfit(product: Product): number | undefined {
-  const initialPrice = parseFloat(product.initial_price);
-  const sellingPrice = parseFloat(product.selling_price);
+export const productSchema = z.object({
+  name: z.string().min(3, { message: "Product name must be at least 3 characters." }),
+  stock: z.coerce.number().min(0, { message: "Stock must be a positive number." }),
+  initial_price: z.coerce.number().min(0, { message: "Initial price must be a positive number." }),
+  selling_price: z.coerce.number().min(0, { message: "Selling price must be a positive number." }),
+  unit: z.string().min(1, { message: "Unit is required." }),
+  category_id: z.string({ required_error: "Please select a category." }),
+  hero_image: z
+    .any()
+    .refine((files) => {
+        if (!files || files.length === 0) return true; // Opsional, jadi lewati jika tidak ada file
+        return files?.[0]?.size <= MAX_FILE_SIZE;
+    }, `Max image size is 5MB.`)
+    .refine(
+      (files) => {
+        if (!files || files.length === 0) return true; // Opsional, jadi lewati jika tidak ada file
+        return ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type);
+      },
+      "Only .jpg, .jpeg, .png and .webp formats are supported."
+    )
+    .optional(),
+});
 
-  if (!isNaN(initialPrice) && !isNaN(sellingPrice)) {
-    return sellingPrice - initialPrice;
+// Ganti fungsi lama dengan yang ini di file datas/products.ts
+
+export const netProfit = (product: Product): number => {
+  // 1. Ubah harga dari string ke number
+  const sellingPrice = Number(product.selling_price);
+  const initialPrice = Number(product.initial_price);
+
+  // 2. Lakukan pengecekan apakah konversi berhasil (bukan NaN - Not a Number)
+  if (isNaN(sellingPrice) || isNaN(initialPrice)) {
+    return 0; // Jika salah satu harga tidak valid, kembalikan 0
   }
-  else {
-    return undefined;
-  }
-}
 
-
-  // name: z.string().min(2, { message: "Name is required" }),
-  // categoryId: z.string().min(1, { message: "Category is required" }),
-  // stock: z.coerce.number().min(0, { message: "Stock is required" }),
-  // unit: z.string().optional(),
-  // initialPrice: z.coerce.number().min(0, { message: "Initial price is required" }),
-  // sellingPrice: z.coerce.number().min(0, { message: "Selling price is required" }),
-  // nonStock: z.boolean().optional(),
+  // 3. Lakukan kalkulasi dengan data yang sudah menjadi number
+  return sellingPrice - initialPrice;
+};
