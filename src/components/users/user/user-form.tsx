@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 
 import { userSchema } from '@/datas/users';
 import users from '@/datas/users';
-import roles from '@/datas/roles';
+import { roles } from '@/datas/roles';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,23 +83,6 @@ export function UserForm({ mode = "create", userId }: { mode?: "create" | "edit"
                   <FormMessage />
                 </FormItem>
               )} />
-              {/* Phone */}
-              {/* <FormField control={form.control} name="phone" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
-                  <FormControl><Input placeholder="08123456789" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} /> */}
-              
-              {/* Address */}
-              {/* <FormField control={form.control} name="address" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Address <span className="text-destructive">*</span></FormLabel>
-                  <FormControl><Textarea placeholder="Masukkan alamat lengkap" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} /> */}
 
               {/* Password */}
               <FormField control={form.control} name="password" render={({ field }) => (

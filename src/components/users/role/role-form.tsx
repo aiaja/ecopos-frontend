@@ -1,157 +1,234 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { roleSchema } from "@/datas/roles";
-import { Search } from "@/components/ui/search";
-import users from '@/datas/users';
-import roles from '@/datas/roles';
-import { permissionsWeb, permissionsMobile, Permission } from '@/datas/permissions';
+import { Permission } from '@/datas/permissions';
+import { PermissionService } from '@/services/permission';
+import { RoleService } from '@/services/role';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Search } from "@/components/ui/search";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
-export function RoleForm({ mode = "create", rolesId }: { mode?: "create" | "edit"; rolesId?: string }) {
-  const router = useRouter();
+interface RoleFormProps {
+    mode?: "create" | "edit";
+    rolesId?: string;
+}
 
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredPermissions, setFilteredPermissions] = useState<Permission[]>([]);
-  const [selectedPermissions, setSelectedPermissions] = useState<Set<number>>(new Set());
+export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
+    const router = useRouter();
 
-  // Combine permissions and group by guardName
-  const allPermissions = [...permissionsWeb, ...permissionsMobile];
+    const [isLoading, setIsLoading] = useState(true);
+    const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+    const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
+    const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter permissions based on search query
-  useEffect(() => {
-    const filtered = allPermissions.filter((perm) =>
-      perm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      perm.guardName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredPermissions(filtered);
-  }, [searchQuery]);
+    const form = useForm<z.infer<typeof roleSchema>>({
+        resolver: zodResolver(roleSchema),
+        defaultValues: { name: "" },
+    });
 
-  // Default form values including permissions
-  let defaultValues = {
-    id: "",
-    name: "",
-    permissions: [] as number[],
-  };
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            setIsLoading(true);
+            try {
+                const permissionsData = await PermissionService.getPermissions();
+                setAllPermissions(permissionsData);
 
-  // If edit mode, load role data and permissions
-  useEffect(() => {
-    if (mode === "edit" && rolesId) {
-      const roleToEdit = roles.find((role) => role.value === rolesId);
-      if (roleToEdit) {
-        defaultValues = {
-          id: roleToEdit.value,
-          name: roleToEdit.label,
-          permissions: [], // TODO: load actual permissions for the role if available
+                if (mode === 'edit' && rolesId) {
+                    const roleToEdit = await RoleService.getRoleById(rolesId);
+                    
+                    form.reset({ name: roleToEdit.name });
+
+                    if (roleToEdit.permissions) {
+                        const initialPermissions = new Set(roleToEdit.permissions.map(p => p.name));
+                        setSelectedPermissions(initialPermissions);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load initial data", error);
+                alert("Gagal memuat data. Mohon kembali dan coba lagi.");
+                router.back();
+            } finally {
+                setIsLoading(false);
+            }
         };
-        setSelectedPermissions(new Set(defaultValues.permissions));
-        form.reset(defaultValues);
-      }
+
+        fetchInitialData();
+    }, [mode, rolesId, form, router]);
+
+    const filteredPermissions = useMemo(() => {
+        if (!searchQuery) return allPermissions;
+        return allPermissions.filter((perm) =>
+            perm.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [allPermissions, searchQuery]);
+
+    const groupedPermissions = useMemo(() => {
+        const groups: { [key: string]: Permission[] } = {};
+        filteredPermissions.forEach((perm) => {
+            const moduleName = perm.name.split(' ').pop() || 'Lainnya';
+            const formattedModuleName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+            if (!groups[formattedModuleName]) {
+                groups[formattedModuleName] = [];
+            }
+            groups[formattedModuleName].push(perm);
+        });
+        return groups;
+    }, [filteredPermissions]);
+
+    function togglePermission(permissionName: string) {
+        const newSelected = new Set(selectedPermissions);
+        if (newSelected.has(permissionName)) {
+            newSelected.delete(permissionName);
+        } else {
+            newSelected.add(permissionName);
+        }
+        setSelectedPermissions(newSelected);
     }
-  }, [mode, rolesId]);
 
-  const form = useForm<z.infer<typeof roleSchema>>({
-    resolver: zodResolver(roleSchema),
-    defaultValues,
-  });
+    async function handleSubmit(values: z.infer<typeof roleSchema>) {
+        const dataToSubmit = {
+            name: values.name,
+            permissions: Array.from(selectedPermissions),
+        };
 
-  function togglePermission(id: number) {
-    const newSelected = new Set(selectedPermissions);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
+        try {
+            if (mode === 'create') {
+                await RoleService.createRole(dataToSubmit);
+                alert('Role berhasil dibuat!');
+            } else if (mode === 'edit' && rolesId) {
+                await RoleService.updateRole(rolesId, dataToSubmit);
+                alert('Role berhasil diupdate!');
+            }
+            router.push('/user-management/role');
+            router.refresh();
+        } catch (error: any) {
+            if (error.response && error.response.data && error.response.data.errors) {
+                const validationErrors = error.response.data.errors;
+                let errorMessage = "Terdapat kesalahan validasi:\n";
+                for (const key in validationErrors) {
+                    errorMessage += `- ${validationErrors[key].join(', ')}\n`;
+                }
+                alert(errorMessage);
+            } else {
+                alert("Terjadi kesalahan saat menyimpan data. Silakan coba lagi.");
+            }
+        }
     }
-    setSelectedPermissions(newSelected);
-  }
 
-  function handleSubmit(values: z.infer<typeof roleSchema>) {
-    const dataToSubmit = {
-      ...values,
-      permissions: Array.from(selectedPermissions),
-    };
-    console.log("Data yang di-submit:", dataToSubmit);
-    alert("Cek console browser untuk melihat data yang disubmit!");
-  }
+    return (
+        <div>
+            <div className="flex justify-between items-center mt-2 mx-6 mb-6">
+                <h1 className="text-3xl font-bold">{mode === "edit" ? "Edit Role" : "New Role"}</h1>
+            </div>
+            <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Name<span className="text-destructive">*</span></FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Role name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        
+                        <div>
+                            <FormLabel className="text-base font-semibold">Search Permissions</FormLabel>
+                            <Search
+                                placeholder="Search by permission name..."
+                                onSearch={(value) => setSearchQuery(value)}
+                                className="max-w mt-2"
+                            />
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <FormLabel className="text-base font-semibold">Permissions</FormLabel>
+                            
+                            <div className="border rounded-lg bg-background">
+                                <div className="max-h-96 overflow-y-auto p-4">
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center py-8">
+                                            <p className="text-muted-foreground">Loading permissions...</p>
+                                        </div>
+                                    ) : Object.keys(groupedPermissions).length > 0 ? (
+                                        <div className="space-y-6">
+                                            {Object.entries(groupedPermissions)
+                                            .sort(([moduleA], [moduleB]) => moduleA.localeCompare(moduleB))
+                                            .map(([moduleName, perms]) => (
+                                                <div key={moduleName} className="space-y-3">
+                                                    {/* Module Header */}
+                                                    <div className="border-b border-border pb-2">
+                                                        <h3 className="font-semibold text-foreground capitalize">
+                                                            {moduleName}
+                                                        </h3>
+                                                    </div>
+                                                    
+                                                    {/* Permission Items Grid */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                        {perms.map((perm) => (
+                                                            <label 
+                                                                key={perm.id} 
+                                                                className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer group"
+                                                            >
+                                                                <div className="flex items-center">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary cursor-pointer"
+                                                                        checked={selectedPermissions.has(perm.name)}
+                                                                        onChange={() => togglePermission(perm.name)}
+                                                                    />
+                                                                </div>
+                                                                <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 group-hover:text-foreground transition-colors">
+                                                                    {perm.name.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                                </span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center py-8">
+                                            <p className="text-muted-foreground">
+                                                No permissions found for "{searchQuery}".
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Selection Summary */}
+                            {selectedPermissions.size > 0 && (
+                                <div className="text-sm text-muted-foreground">
+                                    {selectedPermissions.size} permission{selectedPermissions.size > 1 ? 's' : ''} selected
+                                </div>
+                            )}
+                        </div>
 
-  // Group permissions by guardName for display in columns
-  const groupedPermissions: { [key: string]: Permission[] } = {};
-  filteredPermissions.forEach((perm) => {
-    if (!groupedPermissions[perm.guardName]) {
-      groupedPermissions[perm.guardName] = [];
-    }
-    groupedPermissions[perm.guardName].push(perm);
-  });
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mt-2 mx-6 mb-6">
-        <h1 className="text-3xl font-bold">{mode === "edit" ? "Edit Role" : "New Role"}</h1>
-      </div>
-      <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name<span className="text-destructive">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="Role name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div>
-              <FormLabel>Search</FormLabel>
-              <Search
-              placeholder="Search permissions"
-              onSearch={(value) => setSearchQuery(value)}
-              className="max-w mt-2"
-            />
+                        <div className="flex gap-2 pt-4">
+                            <Button type="submit" className="cursor-pointer" disabled={isLoading}>
+                                {mode === "edit" ? "Update" : "Create"}
+                            </Button>
+                            <Button type="button" variant="outline" className="cursor-pointer" onClick={() => router.back()}>
+                                Cancel
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto border rounded p-2">
-              {Object.entries(groupedPermissions).map(([guardName, perms]) => (
-                <div key={guardName}>
-                  <h3 className="font-semibold mb-2 capitalize">{guardName} Permissions</h3>
-                  {perms.map((perm) => (
-                    <label key={perm.id} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedPermissions.has(perm.id)}
-                        onChange={() => togglePermission(perm.id)}
-                      />
-                      <span>{perm.name}</span>
-                    </label>
-                  ))}
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="cursor-pointer">{mode === "edit" ? "Update" : "Create"}</Button>
-              <Button type="button" variant="outline" className="cursor-pointer" onClick={() => router.back()}>Cancel</Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
