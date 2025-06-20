@@ -1,4 +1,3 @@
-// File: src/app/(tenants)/user-management/role/[roleId]/edit/page.tsx
 "use client";
 
 import { RoleForm } from "@/components/users/role/role-form";

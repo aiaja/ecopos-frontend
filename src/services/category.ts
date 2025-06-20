@@ -1,12 +1,8 @@
 import { BASE_URL } from "./BASE_URL"
 import axios from "axios";
+import { Category } from "@/datas/categories";
 
-type Category = {
-    id?: string;
-    name: string;
-    outlet_id?: string;
-}
-
+type CategoryPayload = Omit<Category, 'id' | 'outlet_id'>;
 
 const getCategories = async (outletId: string): Promise<Category[]> => {
     const response = await fetch(`${BASE_URL}/outlets/${outletId}/categories`, {
@@ -15,9 +11,8 @@ const getCategories = async (outletId: string): Promise<Category[]> => {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
         },
-    }
-    );
-    if (response.status === 500) {
+    });
+    if (!response.ok) {
         throw new Error('Failed to fetch categories');
     }
     const data = await response.json();
@@ -76,12 +71,23 @@ const updateCategory = async (outletId: string, id: string, category: Omit<Categ
     return data.category;
 }
 
-const deleteCategory = async (outletId: string, id: number): Promise<void> => {
+const deleteCategory = async (outletId: string, id: string): Promise<void> => {
     const response = await fetch(`${BASE_URL}/outlets/${outletId}/categories/${id}`, {
         method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
     });
+
     if (!response.ok) {
-        throw new Error('Failed to delete category');
+        let errorMessage = 'Failed to delete category.';
+        try {
+            const errorData = await response.json();
+            errorMessage = `Error ${response.status}: ${errorData.message || 'Unknown server error'}`;
+        } catch (e) {
+            errorMessage = `Failed with status: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
     }
 }
 

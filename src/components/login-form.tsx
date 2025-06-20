@@ -44,10 +44,14 @@ export function LoginForm({
     try{
       console.log("Submitting login form", { email, password })
       const response = await LoginService({ email, password })
+      console.log("Login response:", response)
 
       if (response.token) {
         console.log("Login successful", response.data)
         localStorage.setItem("token", response.token)
+        if (response.user && response.user.outlet_id) {
+          localStorage.setItem("outlet_id", response.user.outlet_id)
+        }
         router.push("/dashboard")
       } else {
         console.error("Login failed", response.data)

@@ -1,207 +1,307 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Penting untuk menampilkan gambar
+import { Product, netProfit } from "@/datas/products"; // Pastikan path ini benar
 
+// Import komponen UI
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Search } from "@/components/ui/search";
 import { SortButton } from "@/components/ui/sort";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+// Helper function untuk format mata uang, bisa juga ditaruh di file terpisah (misal: src/utils/formatters.ts)
+const formatCurrency = (amount: number | string) => {
+    const numberAmount = Number(amount);
+    if (isNaN(numberAmount)) return "N/A";
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(numberAmount);
+};
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+interface ProductsTableProps {
+  products: Product[];
+  onDelete: (productId: string) => void;
+  onToggleStock: (productId: string, newStatus: boolean) => void; 
+}
 
-import { Product, netProfit } from "../../../datas/products";
-
-export default function ProductsTable({ products }: { products?: Product[] }) {
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-
+export default function ProductsTable({ products, onDelete, onToggleStock }: ProductsTableProps) {
+  // PERBAIKAN LOGIKA STATE: Kita gunakan satu state utama `displayProducts`
+  const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const netProfitProducts = useMemo(() => {
-    if(!products) return [];
-    return products.map((product) => ({
-      ...product,
-      net_profit: netProfit(product),
-    }));
-  }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    return netProfitProducts.filter((product) => {
-      return (
-        (product.id !== undefined && product.id.toString().includes(query)) ||
-        product.name.toLowerCase().includes(query) ||
-        (product.category?.name || "").toLowerCase().includes(query)
-      );
-    });
-  }, [searchQuery, netProfitProducts]);
-
-  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
-
+  // useEffect untuk meng-handle filter dan sinkronisasi data dari props
   useEffect(() => {
-    setSortedProducts(filteredProducts);
-  }, [searchQuery, filteredProducts]);
+    const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.id ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setDisplayProducts(filtered);
+    setCurrentPage(1); // Selalu kembali ke halaman 1 setiap kali filter/data berubah
+  }, [products, searchQuery]);
+
+  const totalPages = Math.ceil(displayProducts.length / itemsPerPage);
+  const paginatedProducts = displayProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div>
-      {/* Header */}
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
-        <Button asChild type="button" className="w-32">
+        <Button asChild>
           <Link href="/inventory/products/new">New Product</Link>
         </Button>
       </div>
 
-      {/* Table Container */}
-      <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
-        {/* Search */}
-        <Search
-          placeholder="Search (ID/Name/Category)"
-          onSearch={(value) => setSearchQuery(value)}
-          className="max-w-sm"
-        />
+      <div className="m-6 px-6 bg-white border rounded-lg shadow-sm">
+        <div className="py-6 space-y-4">
+          <Search
+            placeholder="Search (ID/Name/Category)"
+            onSearch={setSearchQuery}
+            className="max-w-md"
+          />
+          
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/50">
+                  <TableHead className="font-semibold text-gray-900">
+                    ID
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="id"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 w-20">
+                    Image
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900">
+                    Name
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="name"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
 
-        {/* Table */}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                ID
-                <SortButton<Product>
-                  data={sortedProducts}
-                  sortKey="id"
-                  onSort={setSortedProducts}
-                />
-              </TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="text-center">
-                Stock
-                <SortButton<Product>
-                  data={sortedProducts}
-                  sortKey="stock"
-                  onSort={setSortedProducts}
-                />
-              </TableHead>
-              <TableHead className="text-center">Unit</TableHead>
-              <TableHead className="text-center">
-                Initial Price
-                <SortButton<Product>
-                  data={sortedProducts}
-                  sortKey="initial_price"
-                  onSort={setSortedProducts}
-                />
-              </TableHead>
-              <TableHead className="text-center">
-                Selling Price
-                <SortButton<Product>
-                  data={sortedProducts}
-                  sortKey="selling_price"
-                  onSort={setSortedProducts}
-                />
-              </TableHead>
-              <TableHead className="text-center">
-                Net Profit
-                <SortButton<Product>
-                  data={sortedProducts}
-                  sortKey="net_profit"
-                  onSort={setSortedProducts}
-                />
-              </TableHead>
-              <TableHead className="text-center">Stock?</TableHead>
-              <TableHead className="text-center">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {paginatedProducts.length > 0 ? (
-              paginatedProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>{product.id}</TableCell>
-                  <TableCell>{product.category.name}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell className="text-center">{product.stock}</TableCell>
-                  <TableCell className="text-center">{product.unit}</TableCell>
-                  <TableCell className="text-right">{product.initial_price}</TableCell>
-                  <TableCell className="text-right">{product.selling_price}</TableCell>
-                  <TableCell className="text-right">{product.net_profit !== undefined ? product.net_profit.toLocaleString() : 'N/A'}</TableCell>
-                  <TableCell className="text-center">
-                    <Switch checked={!product.is_non_stock} /> 
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Button asChild type="button" className="w-18">
-                      <Link href={`/inventory/products/${product.id}/edit`}>
-                        Edit
-                      </Link>
-                    </Button>
-                  </TableCell>
+                  <TableHead className="font-semibold text-gray-900">
+                    Category
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="category.name"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 text-center">
+                    Stock
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="stock"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900">
+                    Unit
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 text-right">
+                    Initial Price
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="initial_price"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 text-right">
+                    Selling Price
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="selling_price"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 text-right">
+                    Net Profit
+                    <SortButton<Product>
+                      data={displayProducts}
+                      sortKey="net_profit"
+                      onSort={setDisplayProducts}
+                    />
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 text-center">
+                    Non-Stock
+                  </TableHead>
+                  
+                  <TableHead className="font-semibold text-gray-900 text-center">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={12} className="text-center">
-                  No product found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              
+              <TableBody>
+                {paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((product, index) => (
+                    <TableRow 
+                      key={product.id} 
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}
+                    >
+                      <TableCell>
+                        {product.id ?? ""}
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="w-14 h-14 relative">
+                          {product.hero_images ? (
+                            <Image
+                              src={product.hero_images}
+                              alt={product.name}
+                              fill
+                              sizes="56px"
+                              className="rounded-lg object-cover border"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-100 rounded-lg border flex items-center justify-center">
+                              <span className="text-xs text-gray-400 font-medium">No Image</span>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell className="font-bold text-gray-900">
+                        {product.name}
+                      </TableCell>
+                      
+                      <TableCell className="text-gray-700">
+                        {product.category?.name || 'N/A'}
+                      </TableCell>
+                      
+                      <TableCell className="text-center font-bold text-gray-900">
+                        {product.stock}
+                      </TableCell>
+                      
+                      <TableCell className="text-gray-700">
+                        {product.unit}
+                      </TableCell>
+                      
+                      <TableCell className="text-right text-gray-900">
+                        {formatCurrency(product.initial_price)}
+                      </TableCell>
+                      
+                      <TableCell className="text-right text-gray-900">
+                        {formatCurrency(product.selling_price)}
+                      </TableCell>
+                      
+                      <TableCell className="text-right font-bold text-gray-900">
+                        {formatCurrency(netProfit(product))}
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="flex justify-center">
+                          <Switch 
+                            checked={product.is_non_stock} 
+                            onCheckedChange={(newStatus) => onToggleStock(product.id ?? "", newStatus)}
+                          />
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="flex gap-2 justify-center">
+                          <Button 
+                            asChild 
+                            size="sm" 
+                            type="button"
+                            className="text-xs px-3 w-15"
+                          >
+                            <Link href={`/inventory/products/${product.id}/edit`}>
+                              Edit
+                            </Link>
+                          </Button>
+                          <Button
+                            size="sm"
+                            type="button"
+                            className="text-xs px-3 w-15 bg-red-500 hover:bg-red-500/90 cursor-pointer" 
+                            onClick={() => onDelete(product.id ?? "")}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={11} className="text-center h-24 text-gray-500">
+                      No products found for "{searchQuery}".
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-        {/* Pagination */}
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  href="#"
-                  isActive={currentPage === i + 1}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentPage(i + 1);
-                  }}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+          {totalPages > 1 && (
+            <div className="flex justify-center pt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage((prev) => Math.max(prev - 1, 1));
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === i + 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(i + 1);
+                        }}
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

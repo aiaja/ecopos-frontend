@@ -15,7 +15,6 @@ const getPermissions = async (): Promise<Permission[]> => {
     }
 
     const data = await response.json();
-    // API-mu mengirim { permissions: [...] }, jadi kita ambil array-nya
     return data.permissions; 
 }
 
