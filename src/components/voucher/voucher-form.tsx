@@ -44,6 +44,8 @@ export function VouchersForm({
     status: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const form = useForm<z.infer<typeof voucherSchema>>({
     resolver: zodResolver(voucherSchema),
     defaultValues,
@@ -86,6 +88,8 @@ export function VouchersForm({
           }
         } catch (error) {
           console.error("Error fetching voucher:", error);
+        } finally{
+          setLoading(false);
         }
       }
     };
@@ -94,6 +98,7 @@ export function VouchersForm({
 
   async function handleSubmit(values: z.infer<typeof voucherSchema>) {
     try {
+      console.log("Submitting:", values);
       if (mode === "create") {
         const newVoucher = {
           id: values.id || "",
@@ -309,14 +314,9 @@ export function VouchersForm({
             </div>
             {/* Action buttons */}
             <div className="flex gap-2">
-              <Button className="cursor-pointer" type="submit">
+              <Button type="submit" className="cursor-pointer">
                 {mode === "edit" ? "Update" : "Create"}
               </Button>
-              {mode !== "edit" && (
-                <Button type="button" variant="outline">
-                  Create & create another
-                </Button>
-              )}
               <Button
                 className="cursor-pointer"
                 type="button"

@@ -86,7 +86,7 @@ export function VouchersTable({ vouchers }: { vouchers?: Voucher[] }) {
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">
         <h1 className="text-3xl font-bold">Vouchers</h1>
         <Button asChild type="button" className="w-32">
-          <Link href="/vouchers/new">New Voucher</Link>
+          <Link href="/voucher/new">New Voucher</Link>
         </Button>
       </div>
 

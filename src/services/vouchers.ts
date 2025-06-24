@@ -27,7 +27,8 @@ const getVouchers = async (outletId: string): Promise<Voucher[]> => {
         throw new Error('Failed to fetch vouchers');
     }
     const data = await response.json();
-    return data.vouchers;
+    console.log("hsl",data)
+    return data;
 }
 
 const getVoucherById = async (outletId:string, id: string): Promise<Voucher> => {
@@ -42,7 +43,7 @@ const getVoucherById = async (outletId:string, id: string): Promise<Voucher> => 
         throw new Error('Voucher not found');
     }
     const data = await response.data;
-    return data.voucher;
+    return data;
 }
 
 const createVoucher = async (outletId: string, voucher: Omit<Voucher, 'id'>): Promise<Voucher> => {
@@ -56,11 +57,12 @@ const createVoucher = async (outletId: string, voucher: Omit<Voucher, 'id'>): Pr
             'Content-Type': 'application/json',
         },
     });
+    console.log("Create Voucher Response:", response);
     if (!response.data || !response.data.voucher) {
         throw new Error('Failed to create voucher');
     }
     const data = await response.data;
-    return data.voucher;
+    return data;
 }
 
 const updateVoucher = async (outletId: string, id: string, voucher: Omit<Voucher, 'id'>): Promise<Voucher> => {
