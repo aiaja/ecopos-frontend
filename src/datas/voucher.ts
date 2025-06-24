@@ -1,38 +1,30 @@
+// voucherSchema.ts
+import { z } from "zod";
+
+export const voucherSchema = z.object({
+  id: z.string(),
+  outlet_id: z.string(),
+  code: z.string().min(2, { message: "Code is required" }),
+  name: z.string().min(2, { message: "Name is required" }),
+  type: z.string().min(2, { message: "Type is required" }),
+  nominal: z.number().min(0, { message: "Nominal must be a number" }), // Use number instead of string
+  start_date: z.string().min(2, { message: "Start date is required" }),
+  expired_date: z.string().min(2, { message: "Expired date is required" }),
+  minimum_buying: z.number().min(0, { message: "Minimum Buying must be a number" }), // Use number instead of string
+  status: z.string().min(2, { message: "Status is required" }),
+});
+
+
 export interface Voucher {
   id: string;
-  name: string;
+  outlet_id: string;
   code: string;
-  startDate: string; // ISO format recommended, but can be display string
-  expired: string;   // ISO format recommended, but can be display string
+  name: string;
+  type: string;
+  nominal: number;
+  start_date: string;
+  expired_date: string;
+  minimum_buying: number;
+  status: string;
 }
 
-export const vouchers: Voucher[] = [
-    {
-        id: "1",
-        name: "Pilmo Discount",
-        code: "PILMO10",
-        startDate: "2025-05-01",
-        expired: "2025-05-31",
-    },
-    {
-        id: "2",
-        name: "Summer Sale",
-        code: "SUMMER25",
-        startDate: "2025-06-01",
-        expired: "2025-06-30",
-    },
-    {
-        id: "3",
-        name: "New User Bonus",
-        code: "WELCOME5",
-        startDate: "2025-04-15",
-        expired: "2025-05-15",
-    },
-    {
-        id: "4",
-        name: "Holiday Special",
-        code: "HOLIDAY20",
-        startDate: "2025-12-01",
-        expired: "2025-12-31",
-    },
-];

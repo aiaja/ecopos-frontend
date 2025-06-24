@@ -1,0 +1,334 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { voucherSchema } from "@/datas/voucher";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormSelect,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { id } from "date-fns/locale";
+import { VoucherService } from "@/services/vouchers";
+import { CategoryService } from "@/services/category";
+import { useEffect, useState } from "react";
+import { Category, categories } from "@/datas/categories";
+
+export function VouchersForm({
+  mode = "create",
+  voucherId,
+}: {
+  mode?: "create" | "edit";
+  voucherId?: string;
+}) {
+  const router = useRouter();
+
+  const [defaultValues, setDefaultValues] = useState({
+    id: "",
+    code: "",
+    name: "",
+    type: "",
+    nominal: 0,
+    start_date: "",
+    expired_date: "",
+    minimum_buying: 0,
+    status: "",
+  });
+
+  const form = useForm<z.infer<typeof voucherSchema>>({
+    resolver: zodResolver(voucherSchema),
+    defaultValues,
+  });
+
+  useEffect(() => {
+    const fetchVoucher = async () => {
+      if (mode === "edit" && voucherId) {
+        try {
+          const response = await VoucherService.getVoucherById(
+            localStorage.getItem("outlet_id") || "",
+            voucherId
+          );
+
+          if (response) {
+            setDefaultValues({
+              id: response.id || "",
+              code: response.code || "",
+              name: response.name || "",
+              type: response.type || "",
+              nominal: response.nominal ?? 0,
+              start_date: response.start_date || "",
+              expired_date: response.expired_date || "",
+              minimum_buying: response.minimum_buying ?? 0,
+              status: response.status || "",
+            });
+            form.reset({
+              id: response.id || "",
+              code: response.code || "",
+              name: response.name || "",
+              type: response.type || "",
+              nominal: response.nominal ?? 0,
+              start_date: response.start_date || "",
+              expired_date: response.expired_date || "",
+              minimum_buying: response.minimum_buying ?? 0,
+              status: response.status || "",
+            });
+          } else {
+            console.error("Voucher not found");
+          }
+        } catch (error) {
+          console.error("Error fetching voucher:", error);
+        }
+      }
+    };
+    fetchVoucher();
+  }, [mode, voucherId]);
+
+  async function handleSubmit(values: z.infer<typeof voucherSchema>) {
+    try {
+      if (mode === "create") {
+        const newVoucher = {
+          id: values.id || "",
+          code: values.code || "",
+          name: values.name || "",
+          type: values.type || "",
+          nominal: values.nominal ?? 0,
+          start_date: values.start_date || "",
+          expired_date: values.expired_date || "",
+          minimum_buying: values.minimum_buying ?? 0,
+          status: values.status || "",
+          outlet_id: localStorage.getItem("outlet_id") || "",
+        };
+
+        const response = await VoucherService.createVoucher(
+          localStorage.getItem("outlet_id") || "",
+          newVoucher
+        );
+
+        if (response) {
+          alert("Voucher created successfully");
+        } else {
+          alert("Failed to create voucher");
+        }
+      } else if (mode === "edit" && voucherId) {
+        const updatedVoucher = {
+          id: values.id || "",
+          code: values.code || "",
+          name: values.name || "",
+          type: values.type || "",
+          nominal: values.nominal ?? 0,
+          start_date: values.start_date || "",
+          expired_date: values.expired_date || "",
+          minimum_buying: values.minimum_buying ?? 0,
+          status: values.status || "",
+          outlet_id: localStorage.getItem("outlet_id") || "",
+        };
+
+        const response = await VoucherService.updateVoucher(
+          localStorage.getItem("outlet_id") || "",
+          voucherId,
+          updatedVoucher
+        );
+        if (response) {
+          alert("Voucher updated successfully");
+        } else {
+          alert("Failed to update voucher");
+        }
+      }
+      router.back();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred while processing your request.");
+    }
+  }
+
+  if (mode === "edit" && !defaultValues.name) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mt-2 mx-6 mb-6">
+        <h1 className="text-3xl font-bold">
+          {mode === "edit" ? "Edit Voucher" : "New Voucher"}
+        </h1>
+      </div>
+      <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Code<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Voucher code" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Name<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Voucher name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="start_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Start Date<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Start date" {...field} type="date" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="expired_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Expired Date<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Expired date"
+                        {...field}
+                        type="date"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="nominal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Nominal<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nominal" {...field} type="number" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="minimum_buying"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Minimum Buying<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Minimum buying"
+                        {...field}
+                        type="number"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Type<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Voucher type" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Status<span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Status" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            {/* Action buttons */}
+            <div className="flex gap-2">
+              <Button className="cursor-pointer" type="submit">
+                {mode === "edit" ? "Update" : "Create"}
+              </Button>
+              {mode !== "edit" && (
+                <Button type="button" variant="outline">
+                  Create & create another
+                </Button>
+              )}
+              <Button
+                className="cursor-pointer"
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
+}
