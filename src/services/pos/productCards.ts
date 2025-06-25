@@ -34,7 +34,11 @@ const getProductCards = async (outletId: string): Promise<ProductCard[]> => {
     if (response.status === 500) {
         throw new Error('Failed to fetch product cards');
     }
-    return response.data.products;
+    // Set default hero_images if null or undefined
+    return (response.data.products as ProductCard[]).map(product => ({
+        ...product,
+        hero_images: product.hero_images ?? "/product_default.svg"
+    }));
 }
 
 const addToCart = async (outletId: string, item: AddToCart): Promise<any> => {
@@ -67,9 +71,14 @@ const getProductByCategory = async (outletId: string, categoryId: string): Promi
     if (response.status === 500) {
         throw new Error('Failed to fetch products');
     }
-    // Filter products by category_id on the client side
+    // Filter products by category_id on the client side and set default hero_images if null or undefined
     const products: ProductByCategory[] = response.data.products || [];
-    return products.filter(product => product.category_id === categoryId);
+    return products
+        .filter(product => product.category_id === categoryId)
+        .map(product => ({
+            ...product,
+            hero_images: product.hero_images ?? "/product_default.svg"
+        }));
 };
 
 export const ProductCardsService = { getProductCards, addToCart, getProductByCategory };
