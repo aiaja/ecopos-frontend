@@ -229,10 +229,10 @@ export function UserForm({ mode = "create", userId }: { mode?: "create" | "edit"
                             {/* Outlet Dropdown */}
                             <FormField control={form.control} name="outlet_id" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Outlet</FormLabel>
+                                    <FormLabel>Outlet<span className="text-destructive">*</span></FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value || "NONE"}>
                                         <FormControl>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Pilih outlet (opsional)" />
                                             </SelectTrigger>
                                         </FormControl>
