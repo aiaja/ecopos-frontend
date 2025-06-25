@@ -61,6 +61,8 @@ export function OrderDetails({
       setOrderDetails(response.details ?? []);
     } catch (error) {
       console.error("Error fetching open bill data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,11 +88,9 @@ export function OrderDetails({
   const SubTotal = itemsToCalculate.reduce(
     (sum: number, item: any) =>
       sum +
-      (item.selling_price && item.quantity
-        ? Number(item.selling_price) * item.quantity
-        : item.price && item.qty
-        ? Number(item.price) * item.qty
-        : 0),
+      (item.product && item.quantity
+        ? Number(item.product.selling_price) * item.quantity
+        : Number(item.product?.selling_price) || 0),
     0
   );
 
