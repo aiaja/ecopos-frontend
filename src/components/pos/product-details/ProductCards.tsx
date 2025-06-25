@@ -166,7 +166,7 @@ export function ProductCards({
                   </CardHeader>
                   <CardContent className="px-2">
                     <img
-                      src={productCard.hero_image}
+                      src={productCard.hero_images}
                       alt={productCard.name}
                       className="object-cover h-10 w-full rounded"
                     />

@@ -4,7 +4,7 @@ import axios from "axios";
 type ProductCard = {
     id?: string;
     name?: string;
-    hero_image?: string;
+    hero_images?: string;
     stock?: number;
     selling_price?: number;
 };
@@ -19,7 +19,7 @@ type ProductByCategory = {
     category_name?: string;
     id?: string;
     name?: string;
-    hero_image?: string;
+    hero_images?: string;
     stock?: number;
     selling_price?: number;
 }

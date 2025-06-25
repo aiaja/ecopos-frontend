@@ -3,7 +3,7 @@ import { z } from "zod";
 export const ProductCardSchema = z.object({
     id: z.string(),
     name: z.string().min(2, { message: "Name is required" }),
-    hero_image: z.string().min(2, { message: "Hero image is required" }),
+    hero_images: z.string().min(2, { message: "Hero image is required" }),
     stock: z.number().min(0, { message: "Stock must be a positive number" }),
     selling_price: z.number().min(0, { message: "Selling price must be a positive number" }),
 });
@@ -17,7 +17,7 @@ export const addToCartSchema = z.object({
 export interface ProductCard {
     id: string;
     name: string;
-    hero_image: string;
+    hero_images: string;
     stock: number;
     selling_price: number;
 }
