@@ -1,54 +1,79 @@
 import { z } from "zod";
 
-
-export const userSchema = z.object({
-  name: z.string().min(3, { message: "Nama harus memiliki minimal 3 karakter." }),
+// Skema dasar yang berlaku untuk create dan update
+const baseUserSchema = z.object({
+  username: z.string().min(3, { message: "Username harus memiliki minimal 3 karakter." }),
   email: z.string().email({ message: "Format email tidak valid." }),
-  phone: z.string().min(10, { message: "Nomor telepon minimal 10 digit." }),
-  address: z.string().min(5, { message: "Alamat minimal 5 karakter." }),
-  role: z.string({ required_error: "Role harus dipilih." }),
-  password: z.string().min(8, "Password minimal 8 karakter.").optional().or(z.literal('')),
-  confirmPassword: z.string().optional().or(z.literal('')),
-})
-.refine(data => {
-    if (data.password) {
-      return data.password === data.confirmPassword;
-    }
-    return true;
-  }, {
+  // Saat mengirim, kita akan kirim array ID dari role yang dipilih.
+  // Kita pakai string karena value dari <Select> biasanya string.
+  role_id: z.string().min(1, { message: "Role harus dipilih." }),
+  outlet_id: z.string().optional(),
+});
+
+// Skema KHUSUS untuk MEMBUAT user baru
+export const createUserSchema = baseUserSchema.extend({
+  // Di sini, password WAJIB diisi
+  password: z.string().min(6, { message: "Password minimal 6 karakter." }),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
     message: "Password tidak cocok!",
     path: ["confirmPassword"],
 });
 
+// Skema KHUSUS untuk MENGUPDATE user
+export const updateUserSchema = baseUserSchema.extend({
+  // Di sini, password OPSIONAL. Hanya divalidasi jika diisi.
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine(data => {
+    // Jika password diisi, pastikan cocok dengan konfirmasi
+    if (data.password && data.password.length > 0) {
+      return data.password === data.confirmPassword;
+    }
+    return true;
+}, {
+    message: "Password tidak cocok!",
+    path: ["confirmPassword"],
+}).refine(data => {
+    // Jika password diisi, pastikan panjangnya cukup
+    if (data.password && data.password.length > 0) {
+        return data.password.length >= 6;
+    }
+    return true;
+}, {
+    message: "Password minimal 6 karakter.",
+    path: ["password"],
+});
+
 export interface User {
-  id: number;
-  name: string;
+  id: string;
+  outlet_id: string | null;
+  username: string;
   email: string;
-  phone: string;
-  address: string;
-  role: string;
-  isOwner: boolean;
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+  outlet: Outlet | null;
+  roles: Role[];
 }
 
-const users: User[] = [
-  {
-    id: 1,
-    name: "Super Admin",
-    email: "superadmin@example.com",
-    phone: "081234567890",
-    address: "Jl. Merdeka No. 1, Jakarta",
-    role: "admin",
-    isOwner: true,
-  },
-  {
-    id: 2,
-    name: "Budi Staff",
-    email: "budi.staff@example.com",
-    phone: "089876543210",
-    address: "Jl. Sudirman No. 12, Bandung",
-    role: "staff",
-    isOwner: false,
-  },
-];
+export interface Outlet {
+    id: string;
+    outlet_name: string;
+    address: string;
+    phone_number: string;
+    latitude: string | null;
+    longitude: string | null;
+    email: string | null;
+    tax: string;
+    created_at: string;
+    updated_at: string | null;
+}
 
-export default users;
+export interface Role {
+    id: number;
+    name: string;
+    guard_name: string;
+    created_at: string;
+    updated_at: string;
+}

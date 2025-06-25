@@ -38,22 +38,32 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
         const fetchInitialData = async () => {
             setIsLoading(true);
             try {
+                // 1. Ambil SEMUA permission yang ada untuk ditampilkan sebagai checkbox
                 const permissionsData = await PermissionService.getPermissions();
                 setAllPermissions(permissionsData);
 
+                // 2. JIKA INI MODE EDIT, lakukan langkah tambahan
                 if (mode === 'edit' && rolesId) {
+                    // 3. Ambil detail SATU role yang akan diedit
                     const roleToEdit = await RoleService.getRoleById(rolesId);
                     
+                    // 4. Isi nama role ke dalam input form
                     form.reset({ name: roleToEdit.name });
-
-                    if (roleToEdit.permissions) {
-                        const initialPermissions = new Set(roleToEdit.permissions.map(p => p.name));
-                        setSelectedPermissions(initialPermissions);
+                    
+                    // 5. INI BAGIAN KUNCINYA: Memproses 'contekan' dari backend
+                    // Cek apakah backend mengirimkan array 'permissions' untuk role ini
+                    if (roleToEdit.permissions && roleToEdit.permissions.length > 0) {
+                        
+                        // 6. Ambil semua NAMA dari permission yang dimiliki role tersebut
+                        const initialPermissionNames = roleToEdit.permissions.map(p => p.name);
+                        
+                        // 7. Simpan nama-nama itu ke dalam state, React akan otomatis mencentang checkbox yang cocok
+                        setSelectedPermissions(new Set(initialPermissionNames));
                     }
                 }
             } catch (error) {
                 console.error("Failed to load initial data", error);
-                alert("Gagal memuat data. Mohon kembali dan coba lagi.");
+                alert("Gagal memuat data untuk form.");
                 router.back();
             } finally {
                 setIsLoading(false);
@@ -61,7 +71,7 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
         };
 
         fetchInitialData();
-    }, [mode, rolesId, form, router]);
+    }, [mode, rolesId, form, router]); // Dependency array
 
     const filteredPermissions = useMemo(() => {
         if (!searchQuery) return allPermissions;
