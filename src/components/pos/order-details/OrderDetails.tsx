@@ -13,10 +13,12 @@ import CartCards from "./CartCards";
 import { CartService } from "@/services/pos/cart";
 import { useEffect, useState } from "react";
 import { CartItem } from "@/datas/orderDetails";
+import OpenBillsDialog from "@/components/open-bills/open-bills-dialog";
 
 export function OrderDetails({ orders }: { orders: any[] }) {
   const [isNoteDialogOpen, setNoteDialogOpen] = useState(false);
   const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [isOpenBillsDialogOpen, setOpenBillsDialogOpen] = useState(false);
 
   const [cartItem, setCartItem] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -127,9 +129,20 @@ export function OrderDetails({ orders }: { orders: any[] }) {
         </CardContent>
       </Card>
       <div className="flex flex-row justify-between gap-4">
-        <Button className="flex-1" variant="default">
+        <Button
+          className="flex-1"
+          variant="default"
+          onClick={(e) => {
+            e.preventDefault();
+            setOpenBillsDialogOpen(true);
+          }}
+        >
           Open Bills
         </Button>
+        <OpenBillsDialog
+          isOpen={isOpenBillsDialogOpen}
+          onClose={() => setOpenBillsDialogOpen(false)}
+        />
         <Button className="flex-1" variant="default">
           Proceed to Payment
         </Button>
