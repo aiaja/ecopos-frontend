@@ -36,6 +36,8 @@ export default function Home() {
     fetchProductCards();
   }, []);
 
+  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -44,12 +46,15 @@ export default function Home() {
     );
   }
 
+  // Here we set the mode and selectedOpenBill manually for now
+  const mode = "create"; // Set to "update" if you're updating an open bill
+  const selectedOpenBill = null; // Set the selected open bill object if you are updating
+
   return (
     <div className="flex h-screen w-full">
       {/* Left Section: Product Cards */}
       <div className="w-3/5">
-
-      <ProductCards productCards={productCards} />
+        <ProductCards productCards={productCards} />
       </div>
 
       {/* Right Section: Order Details */}
@@ -59,7 +64,11 @@ export default function Home() {
         </div>
         <Separator />
         <ScrollArea className="p-2">
-          <OrderDetails orders={mockOrders} />
+          <OrderDetails
+            orders={mockOrders}  // You can replace this with real data
+            mode={mode}  // Pass the mode prop (either "create" or "update")
+            selectedOpenBill={selectedOpenBill}  // Pass selected open bill if updating
+          />
         </ScrollArea>
       </div>
     </div>

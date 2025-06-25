@@ -1,6 +1,8 @@
 import { nullable, z } from "zod";
 
 export const openBillsSchema = z.object({
+    id: z.string().min(1, { message: "ID is required" }),
+    code: z.string().min(1, { message: "code is required" }),
     customer_name: z.string().min(1, { message: "Customer name is required" }),
     date: z.string().min(1, { message: "Date is required" }),
     voucher_id: z.string().nullable(),
@@ -16,6 +18,8 @@ export const openBillsSchema = z.object({
 });
 
 export interface OpenBills {
+    id: string,
+    code: string;
     customer_name: string;
     date: string;
     voucher_id: string | null;

@@ -25,7 +25,7 @@ const getCartItems = async (outletId: string): Promise<CartItem[]> => {
     if (response.status === 500) {
         throw new Error('Failed to fetch cart items');
     }
-    return response.data.cart;
+    return response.data.cart ?? [];
 };
 
 const updateCartItem = async (outletId: string, id: string, item: Partial<CartItem>): Promise<CartItem> => {
