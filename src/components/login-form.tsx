@@ -5,32 +5,47 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+<<<<<<< HEAD
 import { useState } from "react"
 import { LoginService } from "@/services/login"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from 'lucide-react';
+=======
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+>>>>>>> ec59866f8a3c1909cf8710bc7e5fb320292ec1c9
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+<<<<<<< HEAD
   const router = useRouter()
+=======
+
+  const router = useRouter()
+
+>>>>>>> ec59866f8a3c1909cf8710bc7e5fb320292ec1c9
   const [form, setForm] = useState({
     email: "",
     password: "",
   })
 
+<<<<<<< HEAD
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasInputError, setHasInputError] = useState(false);
 
+=======
+>>>>>>> ec59866f8a3c1909cf8710bc7e5fb320292ec1c9
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }))
+<<<<<<< HEAD
     if (errorMessage) setErrorMessage(null);
     if (hasInputError) setHasInputError(false);
   }
@@ -73,6 +88,44 @@ export function LoginForm({
 
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props} onSubmit={handleSubmit}>
+=======
+    console.log(form)
+  }
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    // Handle form submission logic here
+    if (form.email && form.password) {
+      const response = await fetch("https://tannn.my.id/api/login", {
+        method: "POST",
+        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const data = await response.json()
+      console.log(data)
+
+      if (response.ok) {
+        // Handle successful login
+        console.log("Login successful", data)
+        localStorage.setItem("token", data.token)
+        router.push("/dashboard")
+
+      } else {
+        // Handle login error
+        console.error("Login failed", data)
+      }
+    } else {
+      alert("Please fill in all fields")
+      }
+  }
+
+  return (
+    <form className={cn("flex flex-col gap-6", className)} {...props} onSubmit={onSubmit}>
+>>>>>>> ec59866f8a3c1909cf8710bc7e5fb320292ec1c9
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-4xl font-bold text-primary">Welcome</h1>
         <p className="text-muted-foreground text-sm text-balance mb-2">
@@ -82,6 +135,7 @@ export function LoginForm({
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
+<<<<<<< HEAD
           <Input 
             id="email"
             type="email"
@@ -93,6 +147,9 @@ export function LoginForm({
               {"border-red-500 ring-1 ring-red-500 focus-visible:ring-red-500": hasInputError}
             )}
           />
+=======
+          <Input id="email" type="email" name="email" placeholder="email@example.com" required onChange={handleChange}/>
+>>>>>>> ec59866f8a3c1909cf8710bc7e5fb320292ec1c9
         </div>
         <div className="grid gap-3">
           <Label htmlFor="password">Password</Label>
@@ -111,6 +168,10 @@ export function LoginForm({
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
+<<<<<<< HEAD
+=======
+          <Input id="password" type="password" name="password" required  onChange={handleChange} />
+>>>>>>> ec59866f8a3c1909cf8710bc7e5fb320292ec1c9
         </div>
 
         {errorMessage && (
