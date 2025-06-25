@@ -30,4 +30,13 @@ export interface OpenBills {
         product_id: string;
         qty: number;
     }[];
+    details?:{
+        id: string,
+        code: string,
+        open_bill_id: string,
+        product_id: string,
+        price: number,
+        cost: number,
+        qty: number,
+    }[];
 }

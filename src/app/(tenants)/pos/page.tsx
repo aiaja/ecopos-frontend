@@ -9,10 +9,17 @@ import { useEffect, useState } from "react";
 import { ProductCard } from "@/datas/productCards";
 import { ProductCardsService } from "@/services/pos/productCards";
 import { ProductCards } from "@/components/pos/product-details/ProductCards";
+import { useSearchParams } from "next/navigation"; // To access query parameters (such as OpenBill ID)
+import { OpenBillsService } from "@/services/openBills"; // Service to fetch OpenBill data
 
 export default function Home() {
   const [productCards, setProductCards] = useState<ProductCard[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedOpenBill, setSelectedOpenBill] = useState<any | null>(null); // Store selected OpenBill if in update mode
+
+  // Access query parameters to determine if we're in update mode (based on the OpenBill ID)
+  const searchParams = useSearchParams();
+  const openBillId = searchParams.get("id");
 
   const fetchProductCards = async () => {
     try {
@@ -32,11 +39,28 @@ export default function Home() {
     }
   };
 
+  const fetchOpenBillData = async (id: string) => {
+    try {
+      const response = await OpenBillsService.getOpenBillById(
+        localStorage.getItem("outlet_id") || "",
+        id
+      );
+      setSelectedOpenBill(response); // Set the OpenBill details if update mode
+    } catch (error) {
+      console.error("Error fetching open bill data:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProductCards();
-  }, []);
-
-  
+    
+    // If an OpenBill ID is found in the query parameters, fetch the OpenBill data
+    if (openBillId) {
+      fetchOpenBillData(openBillId);
+    } else {
+      setSelectedOpenBill(null); // In case there is no OpenBill ID, ensure selectedOpenBill is null for create mode
+    }
+  }, [openBillId]); // This effect runs when openBillId changes (or on initial render)
 
   if (loading) {
     return (
@@ -46,9 +70,7 @@ export default function Home() {
     );
   }
 
-  // Here we set the mode and selectedOpenBill manually for now
-  const mode = "create"; // Set to "update" if you're updating an open bill
-  const selectedOpenBill = null; // Set the selected open bill object if you are updating
+  const mode = selectedOpenBill ? "update" : "create"; 
 
   return (
     <div className="flex h-screen w-full">
@@ -65,9 +87,9 @@ export default function Home() {
         <Separator />
         <ScrollArea className="p-2">
           <OrderDetails
-            orders={mockOrders}  // You can replace this with real data
-            mode={mode}  // Pass the mode prop (either "create" or "update")
-            selectedOpenBill={selectedOpenBill}  // Pass selected open bill if updating
+            orders={mockOrders}
+            mode={mode}  
+            selectedOpenBill={selectedOpenBill}  
           />
         </ScrollArea>
       </div>
