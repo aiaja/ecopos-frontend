@@ -2,13 +2,14 @@ import { BASE_URL } from "./BASE_URL";
 import axios from "axios";
 import { User } from "@/datas/users"; 
 
-// Tipe data untuk payload saat membuat atau mengupdate User
-// Ini harus cocok dengan `userSchema` di file `datas/users.ts`
-type UserPayload = {
+// Tipe data payload yang dikirim ke API.
+type ApiUserPayload = {
     username: string;
     email: string;
-    role_ids: string[]; // Backend kemungkinan mengharapkan array of ID
-    password?: string; // Opsional, hanya untuk create atau saat ganti password
+    role: string; 
+    outlet_id?: string | null;
+    password?: string;
+    password_confirmation?: string; 
 };
 
 /**
@@ -26,7 +27,7 @@ const getUsers = async (): Promise<User[]> => {
         throw new Error('Failed to fetch users');
     }
     const data = await response.json();
-    return data.users; // Sesuai struktur API-mu
+    return data.users;
 }
 
 /**
@@ -36,17 +37,29 @@ const getUserById = async (id: string): Promise<User> => {
     const response = await axios.get(`${BASE_URL}/users/${id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
     });
-    if (!response.data || !response.data.user) {
-        throw new Error('User not found');
+
+    if (!response.data) {
+        throw new Error('No data received from server');
     }
-    // Asumsi backend mengirim { user: { ... } }
-    return response.data.user;
+
+    // --- PERBAIKAN FINAL BERDASARKAN JSON BARU ---
+    // Berdasarkan respons API, objek user ada di dalam `response.data.users`
+    const userData = response.data.users;
+
+    // Validasi akhir untuk memastikan objek user-nya valid
+    if (!userData || typeof userData !== 'object' || !userData.id) {
+         const backendMessage = response.data.message || 'The API response does not contain a valid user object inside the "users" property.';
+         throw new Error(`Failed to get user details: ${backendMessage}`);
+    }
+
+    return userData;
 }
+
 
 /**
  * Membuat user baru
  */
-const createUser = async (userData: UserPayload): Promise<User> => {
+const createUser = async (userData: ApiUserPayload): Promise<User> => {
     const response = await axios.post(`${BASE_URL}/users`, userData, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -62,12 +75,7 @@ const createUser = async (userData: UserPayload): Promise<User> => {
 /**
  * Mengupdate data user
  */
-const updateUser = async (id: string, userData: Partial<UserPayload>): Promise<User> => {
-    // Jika password kosong, hapus dari payload agar tidak mengupdate password jadi kosong
-    if (userData.password === '') {
-        delete userData.password;
-    }
-
+const updateUser = async (id: string, userData: Partial<ApiUserPayload>): Promise<User> => {
     const response = await axios.put(`${BASE_URL}/users/${id}`, userData, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
