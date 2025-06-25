@@ -1,10 +1,11 @@
+import { Product } from "@/datas/mockProducts";
 import { BASE_URL } from "./BASE_URL";
 import axios from "axios";
 
 type OpenBills = {
     id: string;
     customer_name: string;
-    code: string;
+    code?: string;
     date: string;
     voucher_id: string | null;
     discout_price: number | null;
@@ -22,6 +23,7 @@ type OpenBills = {
         price: number,
         cost: number,
         qty: number,
+        product: Product,
     }[] | [];
 };
 

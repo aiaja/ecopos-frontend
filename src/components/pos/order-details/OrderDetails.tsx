@@ -32,7 +32,7 @@ export function OrderDetails({
   const [isOpenBillsDialogOpen, setOpenBillsDialogOpen] = useState(false);
 
   const [cartItem, setCartItem] = useState<CartItem[]>([]);
-  const [orderDetails, setOrderDetails] = useState<any[]>([]); // Store OpenBill details when in update mode
+  const [orderDetails, setOrderDetails] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchCartItems = async () => {
@@ -66,7 +66,7 @@ export function OrderDetails({
 
   useEffect(() => {
     if (mode === "create") {
-      fetchCartItems(); 
+      fetchCartItems();
     } else if (mode === "update" && selectedOpenBill) {
       fetchOpenBillData(selectedOpenBill.id); // Fetch OpenBill details for update mode
     }
@@ -81,40 +81,69 @@ export function OrderDetails({
   }
 
   // Calculate totals based on the mode
-  const itemsToCalculate = mode === "create" ? cartItem : orderDetails; // Decide which items to use based on the mode
+  const itemsToCalculate = mode === "create" ? cartItem : orderDetails;
+  console.log("items", itemsToCalculate);
   const SubTotal = itemsToCalculate.reduce(
     (sum: number, item: any) =>
-      sum + (item.price && item.qty ? Number(item.price) * item.qty : 0),
+      sum +
+      (item.selling_price && item.quantity
+        ? Number(item.selling_price) * item.quantity
+        : item.price && item.qty
+        ? Number(item.price) * item.qty
+        : 0),
     0
   );
+
+  console.log("SubTotal", SubTotal);
 
   const Tax = SubTotal * 0.11;
   const Total = SubTotal + Tax;
 
   const handleSubmitOpenBills = async (values: { customer_name: string }) => {
     const submitOpenBills = {
-      id:
-        mode === "update" && selectedOpenBill
-          ? selectedOpenBill.id
-          : new Date().toISOString(),
-      code:
-        mode === "update" && selectedOpenBill
-          ? selectedOpenBill.code
-          : new Date().getTime().toString(),
       customer_name: values.customer_name,
       date: new Date().toISOString(),
       voucher_id: null,
       discout_price: 0, // Assuming no discount for now
       total_price: Total,
-      total_qty: itemsToCalculate.reduce((sum, item) => sum + item.qty, 0),
-      products: itemsToCalculate.map((item) => ({
-        product_id: item.product_id || item.product.id, // Ensure product_id exists
-        qty: item.qty,
+      total_qty: cartItem.reduce((sum, item) => sum + item.quantity, 0),
+      products: cartItem.map((item) => ({
+        product_id: item.product.id,
+        qty: item.quantity,
       })),
     };
 
-    // Handle submission for "create" or "update" logic
-    // Continue with existing submission logic
+    try {
+      if (mode === "create") {
+        const response = await OpenBillsService.createOpenBills(
+          localStorage.getItem("outlet_id") || "",
+          submitOpenBills
+        );
+        if (response) {
+          alert("Open Bill Created successfully");
+          setCartItem([]);
+          router.refresh();
+        } else {
+          alert("Failed to create Open Bill");
+        }
+      } else if (mode === "update" && selectedOpenBill) {
+        const response = await OpenBillsService.updateOpenBills(
+          localStorage.getItem("outlet_id") || "",
+          selectedOpenBill.id,
+          submitOpenBills
+        );
+        if (response) {
+          alert("Open Bill Updated successfully");
+          setCartItem([]);
+          router.push("/pos");
+        } else {
+          alert("Failed to update Open Bill");
+        }
+      }
+    } catch (error) {
+      console.error("Error while creating or updating open bill:", error);
+      alert("An error occurred while processing your request.");
+    }
   };
 
   return (
