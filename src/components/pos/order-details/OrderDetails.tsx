@@ -12,24 +12,30 @@ import { CartItem } from "@/datas/orderDetails";
 import OpenBillsDialog from "@/components/open-bills/open-bills-dialog";
 import { OpenBills } from "@/datas/openBills";
 import { useRouter } from "next/navigation";
-import { OpenBillsService } from "@/services/openBills"; // Make sure to import the service
+import { OpenBillsService } from "@/services/openBills";
+import TransactionsDialog from "../transaction-dialog";
+import { TransactionService } from "@/services/transaction";
+import { Transaction } from "@/datas/transaction";
 
 interface OrderDetailsProps {
   orders?: any[]; // list of orders (OpenBills products)
   mode: "create" | "update"; // mode for the operation (create or update)
   selectedOpenBill: OpenBills | null; // selected open bill if updating
+  transaction: Transaction | null;
 }
 
 export function OrderDetails({
   orders,
   mode,
   selectedOpenBill,
+  transaction
 }: OrderDetailsProps) {
   const router = useRouter();
 
   const [isNoteDialogOpen, setNoteDialogOpen] = useState(false);
   const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
   const [isOpenBillsDialogOpen, setOpenBillsDialogOpen] = useState(false);
+  const [isTransactionsDialogOpen, setTransactionsDialogOpen] = useState(false);
 
   const [cartItem, setCartItem] = useState<CartItem[]>([]);
   const [orderDetails, setOrderDetails] = useState<any[]>([]);
@@ -146,6 +152,44 @@ export function OrderDetails({
     }
   };
 
+  const handleSubmitTransactions = async (values: { payed_money: number }) => {
+    const submitTransactions: Transaction = {
+      date: new Date().toISOString(),
+      note: "",
+      voucher_id: null,
+      discount_price: 0,
+      payed_money: values.payed_money,
+      money_changes: values.payed_money - Total,
+      total_price: Total,
+      total_cost: SubTotal,
+      payment_method_id: "", // You should fetch or set this based on available payment methods
+      tax: 0.11, // Assuming a fixed tax rate
+      tax_price: Tax,
+      total_qty: cartItem.reduce((sum, item) => sum + item.quantity, 0),
+      products: cartItem.map((item) => ({
+        product_id: item.product.id,
+        qty: item.quantity,
+      })),
+    };
+
+    try {
+      const response = await TransactionService.createTransaction(
+        localStorage.getItem("outlet_id") || "",
+        submitTransactions
+      );
+      if (response) {
+        alert("Transaction Created successfully");
+        setCartItem([]);
+        router.refresh();
+      } else {
+        alert("Failed to create transaction");
+      }
+    } catch (error) {
+      console.error("Error while creating transaction:", error);
+      alert("An error occurred while processing your request.");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Display cart items or OpenBill details based on the mode */}
@@ -231,9 +275,21 @@ export function OrderDetails({
           onSubmit={handleSubmitOpenBills}
           mode={mode}
         />
-        <Button className="flex-1" variant="default">
+        <Button
+          className="flex-1"
+          onClick={() => {
+            setTransactionsDialogOpen(true);
+          }}
+        >
           Proceed to Payment
         </Button>
+        <TransactionsDialog
+          isOpen={isTransactionsDialogOpen}
+          onClose={() => setTransactionsDialogOpen(false)}
+          transaction={transaction}
+          onSubmit={handleSubmitTransactions}
+          mode={mode}
+        />
       </div>
     </div>
   );
