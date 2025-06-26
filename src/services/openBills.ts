@@ -1,4 +1,4 @@
-import { Product } from "@/datas/mockProducts";
+import { Product } from "@/datas/products";
 import { BASE_URL } from "./BASE_URL";
 import axios from "axios";
 
@@ -11,10 +11,6 @@ type OpenBills = {
     discout_price: number | null;
     total_price: number;
     total_qty: number;
-    products: {
-        product_id: string;
-        qty: number;
-    }[];
     details?:{
         id: string,
         code: string,
@@ -23,7 +19,7 @@ type OpenBills = {
         price: number,
         cost: number,
         qty: number,
-        product: Product,
+        product: Product[],
     }[] | [];
 };
 
@@ -83,35 +79,24 @@ const getOpenBillById = async (outletId: string, id: string): Promise<OpenBills>
     return response.data.data;
 };
 
-const updateOpenBills = async (outletId: string, id: string, OpenBills: Omit<OpenBills, "id">): Promise<OpenBills> => {
-    const token = `Bearer ${localStorage.getItem("token")}`;
-    try {
-        const response = await axios.put(
-            `${BASE_URL}/outlets/${outletId}/open-bills/${id}`,
-            OpenBills,
-            {
-                headers: {
-                    "Authorization": token,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        const data = await response.data;
-        if (!data) {
-            throw new Error("Failed to update open bill");
-        }
-        return data;
-    }catch (error: unknown) {
-        // Narrow the type of 'error' to Error
-        if (error instanceof Error) {
-            console.error(error);
-            throw new Error(error.message || "Failed to update open bill");
-        } else {
-            // If error is not of type 'Error', throw a generic message
-            console.error("An unknown error occurred", error);
-            throw new Error("An unknown error occurred while updating open bill");
-        }
-}};
+const updateOpenBills = async (outletId: string, id: string, item: Partial<OpenBills>): Promise<OpenBills> => {
+    const token = `Bearer ${localStorage.getItem('token')}`;
+    const response = await axios.put(`${BASE_URL}/outlets/${outletId}/open-bills/${id}`, {
+        ...item,
+        outlet_id: outletId,
+    }, {
+        headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+        },
+    });
+    if (!response.data || !response.data.openBills) {
+        throw new Error('Failed to update cart item');
+    }
+    const data = await response.data;
+    return data.openBills;
+}
+
 
 export const deleteOpenBills = async (outletId: string, id: string): Promise<void> => {
     const token = `Bearer ${localStorage.getItem("token")}`;

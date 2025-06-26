@@ -5,6 +5,7 @@ type CartItem = {
     id?: string;
     productId?: string;
     product?: ProductCart;
+    qty?: number;
     quantity?: number;
 };
 

@@ -3,19 +3,19 @@ import {z} from "zod";
 export const addToCartSchema = z.object({
     id: z.string().min(1, { message: "ID is required" }),
     productId: z.string().min(1, { message: "Product ID is required" }),
-    quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
+    qty: z.number().min(1, { message: "Quantity must be at least 1" }),
 });
 export interface addToCart {
     id: string;
     productId: string;
-    quantity: number;
+    qty: number;
 }
 
 export const cartSchema = z.object({
     id: z.string().min(1, { message: "ID is required" }),
     productId: z.string().min(1, { message: "Product ID is required" }),
     name: z.string().min(1, { message: "Name is required" }),
-    quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
+    qty: z.number().min(1, { message: "Quantity must be at least 1" }),
     selling_price: z.number().min(0, { message: "Selling price must be a positive number" }),
 });
 
@@ -24,6 +24,7 @@ export interface CartItem {
     id: string;
     productId: string;
     name: string;
+    qty?: number;
     quantity: number;
     selling_price: number;
 }

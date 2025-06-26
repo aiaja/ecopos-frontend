@@ -1,4 +1,5 @@
 import { nullable, z } from "zod";
+import { Product } from "./products";
 
 export const openBillsSchema = z.object({
     id: z.string().min(1, { message: "ID is required" }),
@@ -9,7 +10,7 @@ export const openBillsSchema = z.object({
     discout_price: z.number().nullable(),
     total_price: z.number(),
     total_qty: z.number(),
-    products: z.array(
+    product: z.array(
         z.object({
             product_id: z.string().min(1, { message: "Product ID is required" }),
             qty: z.number().min(1, { message: "Quantity must be at least 1" }),
@@ -26,10 +27,6 @@ export interface OpenBills {
     discout_price: number | null;
     total_price: number;
     total_qty: number;
-    products: {
-        product_id: string;
-        qty: number;
-    }[];
     details?:{
         id: string,
         code: string,
@@ -38,5 +35,6 @@ export interface OpenBills {
         price: number,
         cost: number,
         qty: number,
+        product: Product[],
     }[];
 }
