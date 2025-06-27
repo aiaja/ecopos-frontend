@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,9 +15,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { id } from 'date-fns/locale';
-import { CategoryService } from '@/services/category';
-import { useEffect, useState } from 'react';
+import { id } from "date-fns/locale";
+import { CategoryService } from "@/services/category";
+import { useEffect, useState } from "react";
 
 export function CategoryForm({
   mode = "create",
@@ -27,8 +27,6 @@ export function CategoryForm({
   categoryId?: string;
 }) {
   const router = useRouter();
-
-
 
   const [defaultValues, setDefaultValues] = useState({
     id: "",
@@ -69,14 +67,14 @@ export function CategoryForm({
   });
 
   async function handleSubmit(values: z.infer<typeof categorySchema>) {
-    try{
+    try {
       if (mode === "create") {
         const newCategory = {
           name: values.name,
           outlet_id: localStorage.getItem("outlet_id") || "",
         };
 
-        const response = await CategoryService .createCategory(
+        const response = await CategoryService.createCategory(
           localStorage.getItem("outlet_id") || "",
           newCategory
         );
@@ -85,7 +83,6 @@ export function CategoryForm({
         } else {
           alert("Failed to create category");
         }
-
       } else if (mode === "edit" && categoryId) {
         const updatedCategory = {
           id: values.id,
@@ -108,7 +105,7 @@ export function CategoryForm({
       console.error("Error submitting form:", error);
       alert("An error occurred while processing your request.");
     }
-  } 
+  }
 
   if (mode === "edit" && !defaultValues.name) {
     return (
@@ -123,18 +120,25 @@ export function CategoryForm({
   return (
     <div>
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">
-        <h1 className="text-3xl font-bold">{mode === "edit" ? "Edit Category" : "New Category"}</h1>
+        <h1 className="text-3xl font-bold">
+          {mode === "edit" ? "Edit Category" : "New Category"}
+        </h1>
       </div>
       <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+          >
             <FormField
               defaultValue={mode === "edit" ? defaultValues.name : ""}
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name<span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>
+                    Name<span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Category name" {...field} />
                   </FormControl>
@@ -143,8 +147,17 @@ export function CategoryForm({
               )}
             />
             <div className="flex gap-2">
-              <Button type="submit" className="cursor-pointer">{mode === "edit" ? "Update" : "Create"}</Button>
-              <Button type="button" variant="outline" className="cursor-pointer" onClick={() => router.back()}>Cancel</Button>
+              <Button type="submit" className="cursor-pointer">
+                {mode === "edit" ? "Update" : "Create"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => router.back()}
+              >
+                Cancel
+              </Button>
             </div>
           </form>
         </Form>

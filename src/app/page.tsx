@@ -25,6 +25,6 @@ export default function Home() {
         height={150}
         className="animate-spin-slow"
       />
-    </div>
+       </div>
   );
 }

@@ -54,7 +54,7 @@ export function UsersTable() {
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">
         <h1 className="text-3xl font-bold">User</h1>
         <Button asChild type="button" className="w-32">
-          <Link href="/tenants/user-management/user/new">New User</Link>
+          <Link href="/user-management/user/new">New User</Link>
         </Button>
       </div>
 
@@ -98,7 +98,7 @@ export function UsersTable() {
                   <TableCell className="text-center">
                     <div className="flex gap-x-2 justify-center">
                       <Button asChild type="button" className="w-18">
-                      <Link href={`/tenants/user-management/user/${user.id}/edit`}>
+                      <Link href={`/user-management/user/${user.id}/edit`}>
                         Edit
                       </Link>
                     </Button>

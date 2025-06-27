@@ -38,7 +38,7 @@ export default function CategoriesTable({
       category.id.toString().includes(query)
     );
   }) : [];
-  
+
   const [sortedCategories, setSortedCategories] = useState<Category[]>(filteredCategories);
 
     const [currentPage, setCurrentPage] = useState<number>(1);
