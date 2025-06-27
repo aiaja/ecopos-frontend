@@ -126,7 +126,7 @@ export function ProductCards({
               className="max-w-sm"
             />
           </div>
-          <div className="flex-1 px-4">
+          <div className="flex-1 px-4 ">
             <Select
               onValueChange={(categoryId) => {
                 if (categoryId === "all") {
@@ -155,29 +155,27 @@ export function ProductCards({
         </div>
         <Separator />
         <ScrollArea className="p-4">
-          <div className="gap-4 flex flex-col">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {sortedProductCards.map((productCard) => (
-                <Card key={productCard.id} className="min-w-0 p-2">
-                  <CardHeader className="px-2 pt-2">
-                    <CardTitle className="text-sm truncate">
-                      {productCard.name}
-                    </CardTitle>
+                <Card key={productCard.id} className="min-w-0 p-2 flex flex-col gap-2">
+                  <CardHeader className="px-2">
+                    <CardTitle className="text-sm truncate">{productCard.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="px-2">
+                  <CardContent className="px-2 flex flex-col items-center">
                     <img
-                      src={productCard.hero_image}
+                      src={productCard.hero_images}
                       alt={productCard.name}
-                      className="object-cover h-10 w-full rounded"
+                      className="object-cover w-full h-24 rounded mb-2"
+                      style={{ maxHeight: "96px", minHeight: "96px" }}
                     />
-                    <p className="text-xs text-gray-500 mb-1">
+                    <p className="text-xs text-gray-500 mb-1 self-start">
                       Stock: {productCard.stock}
                     </p>
-                    <p className="text-primary/75 font-bold text-sm">
+                    <p className="text-primary/75 font-bold text-sm self-start">
                       IDR {productCard.selling_price}
                     </p>
                   </CardContent>
-                  <CardFooter className="w-full px-2">
+                  <CardFooter className="w-full px-2 mt-auto">
                     <Button
                       variant="outline"
                       className="w-full h-8 text-xs"
@@ -194,7 +192,7 @@ export function ProductCards({
                 </Card>
               ))}
             </div>
-          </div>
+         
         </ScrollArea>
       </div>
     </div>

@@ -9,10 +9,17 @@ import { useEffect, useState } from "react";
 import { ProductCard } from "@/datas/productCards";
 import { ProductCardsService } from "@/services/pos/productCards";
 import { ProductCards } from "@/components/pos/product-details/ProductCards";
+import { useSearchParams } from "next/navigation"; // To access query parameters (such as OpenBill ID)
+import { OpenBillsService } from "@/services/openBills"; // Service to fetch OpenBill data
 
 export default function Home() {
   const [productCards, setProductCards] = useState<ProductCard[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedOpenBill, setSelectedOpenBill] = useState<any | null>(null); // Store selected OpenBill if in update mode
+
+  // Access query parameters to determine if we're in update mode (based on the OpenBill ID)
+  const searchParams = useSearchParams();
+  const openBillId = searchParams.get("id");
 
   const fetchProductCards = async () => {
     try {
@@ -32,9 +39,28 @@ export default function Home() {
     }
   };
 
+  const fetchOpenBillData = async (id: string) => {
+    try {
+      const response = await OpenBillsService.getOpenBillById(
+        localStorage.getItem("outlet_id") || "",
+        id
+      );
+      setSelectedOpenBill(response); // Set the OpenBill details if update mode
+    } catch (error) {
+      console.error("Error fetching open bill data:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProductCards();
-  }, []);
+    
+    // If an OpenBill ID is found in the query parameters, fetch the OpenBill data
+    if (openBillId) {
+      fetchOpenBillData(openBillId);
+    } else {
+      setSelectedOpenBill(null); // In case there is no OpenBill ID, ensure selectedOpenBill is null for create mode
+    }
+  }, [openBillId]); // This effect runs when openBillId changes (or on initial render)
 
   if (loading) {
     return (
@@ -44,12 +70,13 @@ export default function Home() {
     );
   }
 
+  const mode = selectedOpenBill ? "update" : "create"; 
+
   return (
     <div className="flex h-screen w-full">
       {/* Left Section: Product Cards */}
       <div className="w-3/5">
-
-      <ProductCards productCards={productCards} />
+        <ProductCards productCards={productCards} />
       </div>
 
       {/* Right Section: Order Details */}
@@ -59,7 +86,11 @@ export default function Home() {
         </div>
         <Separator />
         <ScrollArea className="p-2">
-          <OrderDetails orders={mockOrders} />
+          <OrderDetails
+            orders={mockOrders}
+            mode={mode}  
+            selectedOpenBill={selectedOpenBill}  
+          />
         </ScrollArea>
       </div>
     </div>
