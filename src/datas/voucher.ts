@@ -1,38 +1,49 @@
+import { z } from "zod";
+
+// Zod schema for voucher request (data sent when creating a voucher)
+export const voucherSchema = z.object({
+    
+  id: z.string().min(2, { message: "ID is required" }),
+  code: z.string().min(2, { message: "Code is required" }),
+  name: z.string().min(3, { message: "Voucher name is required" }),
+  type: z.string().min(2, { message: "Type must be 'percentage' or 'nominal'" }),
+  nominal: z.string().refine(value => !isNaN(Number(value)) && Number(value) > 0, {
+    message: "Nominal must be a positive number",
+  }),
+  start_date: z.string().refine(value => !isNaN(Date.parse(value)), {
+    message: "Start date is invalid",
+  }),
+  expired_date: z.string().refine(value => !isNaN(Date.parse(value)), {
+    message: "Expired date is invalid",
+  }),
+  minimum_buying: z.string().refine(value => !isNaN(Number(value)) && Number(value) > 0, {
+    message: "Minimum buying amount must be a positive number",
+  }),
+  status: z.string().min(2, { message: "Status must be 'active' or 'inactive'" }),
+});
+
 export interface Voucher {
-  id: string;
-  name: string;
+    id: string;
   code: string;
-  startDate: string; // ISO format recommended, but can be display string
-  expired: string;   // ISO format recommended, but can be display string
+  name: string;
+  type: string;
+  nominal: string;  // Nominal value in string format (to handle both percentage and nominal values)
+  start_date: string;  // Date in 'YYYY-MM-DD' format
+  expired_date: string;  // Date in 'YYYY-MM-DD' format
+  minimum_buying: string;  // Minimum purchase required in string format
+  status: string;
 }
 
 export const vouchers: Voucher[] = [
-    {
-        id: "1",
-        name: "Pilmo Discount",
-        code: "PILMO10",
-        startDate: "2025-05-01",
-        expired: "2025-05-31",
-    },
-    {
-        id: "2",
-        name: "Summer Sale",
-        code: "SUMMER25",
-        startDate: "2025-06-01",
-        expired: "2025-06-30",
-    },
-    {
-        id: "3",
-        name: "New User Bonus",
-        code: "WELCOME5",
-        startDate: "2025-04-15",
-        expired: "2025-05-15",
-    },
-    {
-        id: "4",
-        name: "Holiday Special",
-        code: "HOLIDAY20",
-        startDate: "2025-12-01",
-        expired: "2025-12-31",
-    },
+    { 
+        id: "string",
+  code: "string",
+  name: "string",
+  type: 'percentage',
+  nominal: "10",
+  start_date: "2025-10-11",  // Date in 'YYYY-MM-DD' format,
+  expired_date: "2025-11-10",
+  minimum_buying: "10000",
+  status: 'active',
+}
 ];
