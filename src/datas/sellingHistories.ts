@@ -1,47 +1,49 @@
-export interface SellingHistory {
-    code: string; 
-    cashier: string;
-    member: string;
-    customerNumber: string;
-    date: string; 
-    grandTotalPrice: number;
-    totalPrice: number;
-    taxPrice: number;
-    totalCost: number;
+export interface Transaction {
+  id: string;
+  cashier_id: string;
+  outlet_id: string;
+  date: string;
+  note: string | null;
+  voucher_id: string | null;
+  discount_price: string;
+  code: string;
+  payed_money: string;
+  money_changes: string;
+  total_price: string;
+  total_cost: string;
+  payment_method_id: string;
+  tax: string;
+  tax_price: string;
+  total_qty: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export const sellingHistories: SellingHistory[] = [
-    {
-        code: "SH001",
-        cashier: "Alice",
-        member: "Gold",
-        customerNumber: "CUST1001",
-        date: "2024-06-01",
-        grandTotalPrice: 150.00,
-        totalPrice: 140.00,
-        taxPrice: 10.00,
-        totalCost: 100.00
-    },
-    {
-        code: "SH002",
-        cashier: "Bob",
-        member: "Silver",
-        customerNumber: "CUST1002",
-        date: "2024-06-02",
-        grandTotalPrice: 200.00,
-        totalPrice: 180.00,
-        taxPrice: 20.00,
-        totalCost: 130.00
-    },
-    {
-        code: "SH003",
-        cashier: "Charlie",
-        member: "Bronze",
-        customerNumber: "CUST1003",
-        date: "2024-06-03",
-        grandTotalPrice: 120.00,
-        totalPrice: 110.00,
-        taxPrice: 10.00,
-        totalCost: 80.00
-    }
-];
+export interface Product {
+  id: string;
+  outlet_id: string;
+  category_id: string;
+  name: string;
+  stock: number;
+  is_non_stock: boolean;
+  initial_price: string;
+  selling_price: string;
+  unit: string;
+  hero_images: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TransactionHistory {
+  id: string;
+  code: string;
+  transaction_id: string;
+  product_id: string;
+  price: string;
+  cost: string;
+  qty: string;
+  created_at: string;
+  updated_at: string;
+  transaction: Transaction;
+  product: Product;
+}
