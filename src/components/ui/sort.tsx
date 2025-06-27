@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowUpDown } from "lucide-react";
+import { getNestedValue } from "@/lib/utils";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -29,20 +30,28 @@ export function SortButton<T>({ data, sortKey, onSort, label }: SortButtonProps<
       return;
     }
 
-    const sortedData = [...data].sort((a, b) => {
-      const aValue = a[sortKey];
-      const bValue = b[sortKey];
+    const sorted = [...data].sort((a, b) => {
+    const aValue = getNestedValue(a, String(sortKey));
+    const bValue = getNestedValue(b, String(sortKey));
 
-      if (aValue === bValue) return 0;
+    if (aValue === bValue) return 0;
 
+    if (typeof aValue === "string" && typeof bValue === "string") {
       if (newDirection === "asc") {
-        return aValue > bValue ? 1 : -1;
+        return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
       } else {
-        return aValue < bValue ? 1 : -1;
+        return bValue.toLowerCase().localeCompare(aValue.toLowerCase());
       }
-    });
+    }
 
-    onSort(sortedData);
+    if (newDirection === "asc") {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+    onSort(sorted);
   };
 
   return (
