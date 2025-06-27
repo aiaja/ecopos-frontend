@@ -11,6 +11,10 @@ type OpenBills = {
     discout_price: number | null;
     total_price: number;
     total_qty: number;
+    products?: {
+        product_id: string,
+        qty: number,
+    }[] | [];
     details?:{
         id: string,
         code: string,
@@ -79,7 +83,7 @@ const getOpenBillById = async (outletId: string, id: string): Promise<OpenBills>
     return response.data.data;
 };
 
-const updateOpenBills = async (outletId: string, id: string, item: Partial<OpenBills>): Promise<OpenBills> => {
+const updateOpenBills = async (outletId: string, id: string, item: Partial<OpenBills | any>): Promise<OpenBills> => {
     const token = `Bearer ${localStorage.getItem('token')}`;
     const response = await axios.put(`${BASE_URL}/outlets/${outletId}/open-bills/${id}`, {
         ...item,
