@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 // Zod schema for voucher request (data sent when creating a voucher)
-export const voucherSchema = z.object({
-    
-  id: z.string().min(2, { message: "ID is required" }),
+export const voucherSchema = z.object({    
   code: z.string().min(2, { message: "Code is required" }),
   name: z.string().min(3, { message: "Voucher name is required" }),
   type: z.string().min(2, { message: "Type must be 'percentage' or 'nominal'" }),

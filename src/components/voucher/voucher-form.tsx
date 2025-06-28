@@ -28,7 +28,6 @@ export function VoucherForm({
   const router = useRouter();
 
   const [defaultValues, setDefaultValues] = useState({
-    id: "",
     code: "",
     name: "",
     type: "",
@@ -38,19 +37,21 @@ export function VoucherForm({
     minimum_buying: "",
     status: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchVoucher = async () => {
       if (mode === "edit" && voucherId) {
         try {
+          setLoading(true);
           const response = await VoucherService.getVoucherById(
             localStorage.getItem("outlet_id") || "",
             voucherId
           );
+          console.log("voucherid :", voucherId)
+          console.log("respons :", response)
           if (response) {
             setDefaultValues({
-              id: response.id || "",
               code: response.code,
               name: response.name,
               type: response.type,
@@ -61,7 +62,6 @@ export function VoucherForm({
               status: response.status,
             });
             form.reset({
-              id: response.id || "",
               code: response.code,
               name: response.name,
               type: response.type,
@@ -168,7 +168,6 @@ export function VoucherForm({
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.code : "" }
                 control={form.control}
                 name="code"
                 render={({ field }) => (
@@ -184,7 +183,6 @@ export function VoucherForm({
                 )}
               />
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.name : "" }
                 control={form.control}
                 name="name"
                 render={({ field }) => (
@@ -202,7 +200,6 @@ export function VoucherForm({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.start_date : "" }
                 control={form.control}
                 name="start_date"
                 render={({ field }) => (
@@ -218,7 +215,6 @@ export function VoucherForm({
                 )}
               />
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.expired_date : "" }
                 control={form.control}
                 name="expired_date"
                 render={({ field }) => (
@@ -240,7 +236,6 @@ export function VoucherForm({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.nominal : "" }
                 control={form.control}
                 name="nominal"
                 render={({ field }) => (
@@ -256,7 +251,6 @@ export function VoucherForm({
                 )}
               />
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.minimum_buying : "" }
                 control={form.control}
                 name="minimum_buying"
                 render={({ field }) => (
@@ -278,7 +272,6 @@ export function VoucherForm({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.type : "" }
                 control={form.control}
                 name="type"
                 render={({ field }) => (
@@ -294,7 +287,6 @@ export function VoucherForm({
                 )}
               />
               <FormField
-              defaultValue={mode === "edit" ? defaultValues.status : "" }
                 control={form.control}
                 name="status"
                 render={({ field }) => (
@@ -314,7 +306,6 @@ export function VoucherForm({
               <Button
                 type="submit"
                 className="cursor-pointer"
-                onClick={()=> handleSubmit}
               >
                 {mode === "edit" ? "Update" : "Create"}
               </Button>
