@@ -4,6 +4,7 @@ import { UsersTable } from "@/components/users/user/user-table";
 import { useEffect, useState } from "react";
 import { User } from "@/datas/users";
 import { UserService } from "@/services/user";
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -15,9 +16,9 @@ export default function UsersPage() {
     try {
       const response = await UserService.getUsers();
       setUsers(response || []);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      alert("Failed to load users.");
+    } catch (error: any) {
+      toast.error(error.message || "Gagal memuat data pengguna.");
+      setUsers([]); // Kosongkan data jika gagal
     } finally {
       setIsLoading(false);
     }
@@ -27,21 +28,33 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-   // Fungsi untuk menangani penghapusan user
+  // Fungsi untuk menangani penghapusan user
   const handleDeleteUser = async (userId: string) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    const performDelete = async () => {
       try {
         await UserService.deleteUser(userId);
-        alert("User deleted successfully!");
-        fetchUsers(); // Ambil ulang data terbaru
+        toast.success("Pengguna berhasil dihapus!");
+        fetchUsers();
       } catch (error: any) {
-        console.error("Failed to delete user:", error);
-        alert(error.message || "Failed to delete user.");
+        toast.error(error.message || "Gagal menghapus pengguna.");
       }
-    }
+    };
+
+    toast("Konfirmasi Penghapusan", {
+        description: "Apakah Anda yakin ingin menghapus pengguna ini?",
+        action: {
+            label: "Hapus",
+            onClick: () => performDelete(),
+        },
+        cancel: {
+            label: "Batal",
+            onClick: () => {},
+        },
+        duration: Infinity,
+    });
   };
 
-   if (isLoading) {
+  if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 

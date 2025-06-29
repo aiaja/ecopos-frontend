@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/sidebar/app-sidebar"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,10 +9,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react"
+import { useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner"; // pastikan sudah install & Toaster dipasang di RootLayout
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,12 +22,34 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // Set the sidebar to be collapsible if the path is "/tenants/pos"
   const isCollapsible = pathname === "/tenants/pos";
 
+  // Check token + outlet_id on load
   useEffect(() => {
     const token = localStorage.getItem("token");
     const outletId = localStorage.getItem("outlet_id");
     if (!token || !outletId) {
       window.location.href = "/login";
     }
+  }, []);
+
+  // Interceptor untuk menangani session habis
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          toast.error("Sesi Anda habis, silakan login kembali");
+          localStorage.clear();
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 1500);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   return (
@@ -59,5 +83,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </SidebarProvider>
-  )
+  );
 }

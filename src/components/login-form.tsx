@@ -53,6 +53,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         if (response.user && response.user.outlet_id) {
           localStorage.setItem("outlet_id", response.user.outlet_id)
         }
+        if (response.user && response.user.roles && response.user.roles.length > 0) {
+          localStorage.setItem("role_id", response.user.roles[0].id.toString());
+        }
         router.push("/dashboard")
       } else {
         setServerError("Login gagal. Respons tidak valid dari server.")
