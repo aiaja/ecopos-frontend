@@ -6,15 +6,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 
-// Import "Single Source of Truth"
-import { Category } from "@/datas/categories";
 import { categorySchema} from "@/datas/categories";
 import { toast } from 'sonner';
 
-// Import Service Layer
 import { CategoryService } from "@/services/category";
 
-// Import Komponen UI dari shadcn/ui
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,17 +22,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+interface CategoryFormProps {
+    mode?: "create" | "edit";
+    categoryId?: string;
+}
 
-
-export function CategoryForm({
-  mode = "create",
-  categoryId,
-}: {
-  mode?: "create" | "edit";
-  categoryId?: string;
-}) {
+export function CategoryForm({ mode = "create", categoryId }: CategoryFormProps) {
   const router = useRouter();
-
+  
   const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<z.infer<typeof categorySchema>>({
@@ -47,89 +40,68 @@ export function CategoryForm({
   });
 
   useEffect(() => {
-    // Jika mode create, tidak perlu fetch data apa-apa
-    if (mode === "create") {
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchCategory = async () => {
-      setIsLoading(true);
-      try {
-        if (categoryId) {
-          const outletId = localStorage.getItem("outlet_id") || "";
-          const response = await CategoryService.getCategoryById(
-            outletId,
-            categoryId
-          );
-          // Gunakan form.reset untuk mengisi form dengan data dari server
-          form.reset({
-            name: response.name,
-          });
+    const fetchInitialData = async () => {
+        setIsLoading(true);
+        try {
+            // Hanya fetch data jika mode 'edit' dan categoryId ada
+            if (mode === 'edit' && categoryId) {
+                const outletId = localStorage.getItem("outlet_id") || "";
+                const response = await CategoryService.getCategoryById(
+                    outletId,
+                    categoryId
+                );
+                // untuk mengisi form dengan data dari server
+                form.reset({
+                    name: response.name,
+                });
+            }
+        } catch (error: any) {
+            toast.error(`Gagal memuat data kategori: ${error.message}`);
+            router.back();
+        } finally {
+            // Set loading ke false setelah semua proses selesai
+            setIsLoading(false);
         }
-      } catch (error: any) {
-        // Kirim toast kalau error
-        toast.error(`Gagal memuat data kategori: ${error.message}`);
-        // Kembalikan pengguna jika data gagal dimuat
-        router.back();
-      } finally {
-        setIsLoading(false);
-      }
     };
 
-    fetchCategory();
+    fetchInitialData();
   }, [mode, categoryId, form, router]);
 
-// GANTI FUNGSI LAMA DENGAN VERSI DEBUGGING INI
-async function handleSubmit(values: z.infer<typeof categorySchema>) {
-    console.log("1. Tombol 'Simpan' diklik, handleSubmit terpanggil.");
-    console.log("Data dari form (values):", values);
-
-    // Definisikan promise yang akan dieksekusi
+  async function handleSubmit(values: z.infer<typeof categorySchema>) {
     const promise = () => new Promise(async (resolve, reject) => {
-        console.log("2. Promise di dalam toast mulai dieksekusi.");
         try {
-            console.log("3. Masuk ke blok try...catch.");
             const outletId = localStorage.getItem("outlet_id") || "";
+            if (!outletId) {
+                return reject("Outlet ID tidak ditemukan. Mohon login ulang.");
+            }
+
             if (mode === "create") {
-                console.log("4. Mode terdeteksi: CREATE. Memanggil service...");
                 const newCategory = { name: values.name };
                 await CategoryService.createCategory(outletId, newCategory);
             } else if (mode === "edit" && categoryId) {
-                console.log("4. Mode terdeteksi: EDIT. Memanggil service...");
                 const updatedCategory = { name: values.name };
                 await CategoryService.updateCategory(outletId, categoryId, updatedCategory);
             }
-            console.log("5. Panggilan service BERHASIL.");
-            // Jika berhasil, resolve promise ini
             resolve("Data berhasil disimpan!");
         } catch (error: any) {
-            console.error("6. Panggilan service GAGAL. Error:", error);
-            // Jika gagal, reject promise dengan pesan error dari service
             reject(error.message);
         }
     });
 
-    // Gunakan toast.promise untuk menampilkan notifikasi secara otomatis
-    console.log("7. Memanggil toast.promise...");
     toast.promise(promise, {
-        loading: 'Menyimpan data...',
+        loading: 'Menyimpan category...',
         success: (message) => {
-            console.log("8. Sukses! Menjalankan router.back()");
             router.back(); 
             const successMessage = mode === 'edit' ? 'Kategori berhasil diperbarui!' : 'Kategori baru berhasil dibuat!';
             return successMessage;
         },
         error: (errorMessage) => {
-            console.error("9. Gagal! Menampilkan pesan error:", errorMessage);
             return errorMessage;
         },
     });
-}
+  }
 
-
-  // Bagian loading screen
-  if (isLoading) {
+  if (isLoading && mode === 'edit') {
     return (
       <div className="flex justify-center items-center h-screen">
         <p>Loading...</p>
@@ -137,9 +109,7 @@ async function handleSubmit(values: z.infer<typeof categorySchema>) {
     );
   }
 
-  // Ambil isSubmitting dari formState untuk menonaktifkan tombol secara otomatis, untuk mencegah klik ganda
   const { isSubmitting } = form.formState;
-
   return (
     <div>
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">

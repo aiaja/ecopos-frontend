@@ -105,7 +105,7 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
                 } else if (mode === 'edit' && rolesId) {
                     await RoleService.updateRole(rolesId, dataToSubmit);
                 }
-                resolve("Sukses!");
+                resolve("SData berhasil disimpan!");
             } catch (error: any) {
                 reject(error.message);
             }
