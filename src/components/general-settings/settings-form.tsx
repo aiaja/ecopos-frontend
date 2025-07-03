@@ -84,7 +84,7 @@ export function SettingForm() {
                     return reject("Outlet ID tidak ditemukan. Mohon login ulang.");
                 }
                 
-                // Karena ini halaman setting, kita selalu update, tidak ada mode create
+                // Panggil service untuk update outlet
                 await OutletService.updateOutlet(outletId, values);
 
                 // Resolve promise jika berhasil
@@ -98,8 +98,6 @@ export function SettingForm() {
         toast.promise(promise, {
             loading: 'Menyimpan perubahan...',
             success: (message) => {
-                // Opsional: refresh halaman atau lakukan sesuatu setelah berhasil
-                // router.refresh(); 
                 return `${message}`;
             },
             error: (errorMessage) => {
