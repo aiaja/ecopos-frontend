@@ -19,7 +19,6 @@ export const openBillsSchema = z.object({
 });
 
 export interface OpenBills {
-    id: string,
     code: string;
     customer_name: string;
     date: string;

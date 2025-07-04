@@ -20,7 +20,7 @@ import { Transaction } from "@/datas/transaction";
 interface OrderDetailsProps {
   orders?: any[]; // list of orders (OpenBills products)
   mode: "create" | "update"; // mode for the operation (create or update)
-  selectedOpenBill: OpenBills | null; // selected open bill if updating
+  selectedOpenBill: (OpenBills & { id: string }) | null; // selected open bill if updating
   transaction: Transaction | null;
 }
 

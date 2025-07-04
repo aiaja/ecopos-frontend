@@ -1,6 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { addToCartSchema, ProductCard } from "@/datas/productCards";
+import {
+  addToCartSchema,
+  addToOpenBillSchema,
+  ProductCard,
+} from "@/datas/productCards";
 import { Search } from "@/components/ui/search";
 import { ScrollArea } from "../../ui/scroll-area";
 import { Separator } from "../../ui/separator";
@@ -24,11 +28,17 @@ import {
 } from "@/components/ui/select";
 import { CategoryService } from "@/services/category";
 import { Category } from "@/datas/categories";
+import { OpenBillsService } from "@/services/openBills";
+import { openBillsSchema } from "@/datas/openBills";
 
 export function ProductCards({
   productCards,
+  mode,
+  id_openBill,
 }: {
   productCards: ProductCard[];
+  mode?: "update" | "create";
+  id_openBill?: string | null;
 }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -49,6 +59,30 @@ export function ProductCards({
   useEffect(() => {
     setSortedProductCards(filteredProductCards);
   }, [searchQuery]);
+
+  async function handleUpdateCart(values: z.infer<typeof addToOpenBillSchema>) {
+    try {
+      const updateBill = {
+        product_id: values.productId,
+        qty: values.qty,
+      };
+
+      const response = await OpenBillsService.updateOpenBills(
+        localStorage.getItem("outlet_id") || "",
+        id_openBill || "",
+        updateBill
+      );
+      if (response) {
+        alert("Product updated in cart successfully");
+      } else {
+        alert("Failed to update product in cart");
+      }
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating product in cart:", error);
+      alert("An error occurred while processing your request.");
+    }
+  }
 
   async function handleAddToCart(values: z.infer<typeof addToCartSchema>) {
     try {
@@ -155,44 +189,53 @@ export function ProductCards({
         </div>
         <Separator />
         <ScrollArea className="p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {sortedProductCards.map((productCard) => (
-                <Card key={productCard.id} className="min-w-0 p-2 flex flex-col gap-2">
-                  <CardHeader className="px-2">
-                    <CardTitle className="text-sm truncate">{productCard.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-2 flex flex-col items-center">
-                    <img
-                      src={productCard.hero_images}
-                      alt={productCard.name}
-                      className="object-cover w-full h-24 rounded mb-2"
-                      style={{ maxHeight: "96px", minHeight: "96px" }}
-                    />
-                    <p className="text-xs text-gray-500 mb-1 self-start">
-                      Stock: {productCard.stock}
-                    </p>
-                    <p className="text-primary/75 font-bold text-sm self-start">
-                      IDR {productCard.selling_price}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="w-full px-2 mt-auto">
-                    <Button
-                      variant="outline"
-                      className="w-full h-8 text-xs"
-                      onClick={() =>
-                        handleAddToCart({
-                          productId: productCard.id.toString(),
-                          quantity: 1,
-                        }).then(() => window.location.reload())
-                      }
-                    >
-                      Add to Cart
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-         
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {sortedProductCards.map((productCard) => (
+              <Card
+                key={productCard.id}
+                className="min-w-0 p-2 flex flex-col gap-2"
+              >
+                <CardHeader className="px-2">
+                  <CardTitle className="text-sm truncate">
+                    {productCard.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-2 flex flex-col items-center">
+                  <img
+                    src={productCard.hero_images}
+                    alt={productCard.name}
+                    className="object-cover w-full h-24 rounded mb-2"
+                    style={{ maxHeight: "96px", minHeight: "96px" }}
+                  />
+                  <p className="text-xs text-gray-500 mb-1 self-start">
+                    Stock: {productCard.stock}
+                  </p>
+                  <p className="text-primary/75 font-bold text-sm self-start">
+                    IDR {productCard.selling_price}
+                  </p>
+                </CardContent>
+                <CardFooter className="w-full px-2 mt-auto">
+                  <Button
+                    variant="outline"
+                    className="w-full h-8 text-xs"
+                    onClick={() =>
+                      mode === "update"
+                        ? handleUpdateCart({
+                            productId: productCard.id.toString(),
+                            qty: 1,
+                          })
+                        : handleAddToCart({
+                            productId: productCard.id.toString(),
+                            quantity: 1,
+                          }).then(() => window.location.reload())
+                    }
+                  >
+                    {mode === "update" ? "Update Cart" : "Add to Cart"}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </ScrollArea>
       </div>
     </div>
