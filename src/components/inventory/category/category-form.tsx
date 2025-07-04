@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { categorySchema, categories } from "@/datas/categories";
+import { useEffect, useState } from "react";
+
+import { categorySchema} from "@/datas/categories";
+import { toast } from 'sonner';
+
+import { CategoryService } from "@/services/category";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,99 +21,87 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { id } from "date-fns/locale";
-import { CategoryService } from "@/services/category";
-import { useEffect, useState } from "react";
 
-export function CategoryForm({
-  mode = "create",
-  categoryId,
-}: {
-  mode?: "create" | "edit";
-  categoryId?: string;
-}) {
+interface CategoryFormProps {
+    mode?: "create" | "edit";
+    categoryId?: string;
+}
+
+export function CategoryForm({ mode = "create", categoryId }: CategoryFormProps) {
   const router = useRouter();
-
-  const [defaultValues, setDefaultValues] = useState({
-    id: "",
-    name: "",
-  });
-
-  useEffect(() => {
-    const fetchCategory = async () => {
-      if (mode === "edit" && categoryId) {
-        try {
-          const response = await CategoryService.getCategoryById(
-            localStorage.getItem("outlet_id") || "",
-            categoryId
-          );
-          if (response) {
-            setDefaultValues({
-              id: response.id || "",
-              name: response.name,
-            });
-            form.reset({
-              id: response.id || "",
-              name: response.name,
-            });
-          } else {
-            console.error("Category not found");
-          }
-        } catch (error) {
-          console.error("Error fetching category:", error);
-        }
-      }
-    };
-    fetchCategory();
-  }, [mode, categoryId]);
+  
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<z.infer<typeof categorySchema>>({
     resolver: zodResolver(categorySchema),
-    defaultValues,
+    defaultValues: {
+      name: "",
+    },
   });
 
+  useEffect(() => {
+    const fetchInitialData = async () => {
+        setIsLoading(true);
+        try {
+            // Hanya fetch data jika mode 'edit' dan categoryId ada
+            if (mode === 'edit' && categoryId) {
+                const outletId = localStorage.getItem("outlet_id") || "";
+                const response = await CategoryService.getCategoryById(
+                    outletId,
+                    categoryId
+                );
+                // untuk mengisi form dengan data dari server
+                form.reset({
+                    name: response.name,
+                });
+            }
+        } catch (error: any) {
+            toast.error(`Gagal memuat data kategori: ${error.message}`);
+            router.back();
+        } finally {
+            // Set loading ke false setelah semua proses selesai
+            setIsLoading(false);
+        }
+    };
+
+    fetchInitialData();
+  }, [mode, categoryId, form, router]);
+
   async function handleSubmit(values: z.infer<typeof categorySchema>) {
-    try {
-      if (mode === "create") {
-        const newCategory = {
-          name: values.name,
-          outlet_id: localStorage.getItem("outlet_id") || "",
-        };
+    const promise = () => new Promise(async (resolve, reject) => {
+        try {
+            const outletId = localStorage.getItem("outlet_id") || "";
+            if (!outletId) {
+                return reject("Outlet ID tidak ditemukan. Mohon login ulang.");
+            }
 
-        const response = await CategoryService.createCategory(
-          localStorage.getItem("outlet_id") || "",
-          newCategory
-        );
-        if (response) {
-          alert("Category created successfully");
-        } else {
-          alert("Failed to create category");
+            if (mode === "create") {
+                const newCategory = { name: values.name };
+                await CategoryService.createCategory(outletId, newCategory);
+            } else if (mode === "edit" && categoryId) {
+                const updatedCategory = { name: values.name };
+                await CategoryService.updateCategory(outletId, categoryId, updatedCategory);
+            }
+            resolve("Data berhasil disimpan!");
+        } catch (error: any) {
+            reject(error.message);
         }
-      } else if (mode === "edit" && categoryId) {
-        const updatedCategory = {
-          id: values.id,
-          name: values.name,
-        };
+    });
 
-        const response = await CategoryService.updateCategory(
-          localStorage.getItem("outlet_id") || "",
-          categoryId,
-          updatedCategory
-        );
-        if (response) {
-          alert("Category updated successfully");
-        } else {
-          alert("Failed to update category");
-        }
-      }
-      router.back();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("An error occurred while processing your request.");
-    }
+    toast.promise(promise, {
+        loading: 'Menyimpan category...',
+        success: (message) => {
+            router.back(); 
+            const successMessage = mode === 'edit' ? 'Kategori berhasil diperbarui!' : 'Kategori baru berhasil dibuat!';
+            return successMessage;
+        },
+        error: (errorMessage) => {
+            return errorMessage;
+        },
+    });
   }
 
-  if (mode === "edit" && !defaultValues.name) {
+  if (isLoading && mode === 'edit') {
     return (
       <div className="flex justify-center items-center h-screen">
         <p>Loading...</p>
@@ -115,6 +109,7 @@ export function CategoryForm({
     );
   }
 
+  const { isSubmitting } = form.formState;
   return (
     <div>
       <div className="flex justify-between items-center mt-2 mx-6 mb-6">
@@ -129,7 +124,6 @@ export function CategoryForm({
             className="space-y-8"
           >
             <FormField
-              defaultValue={mode === "edit" ? defaultValues.name : ""}
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -145,14 +139,15 @@ export function CategoryForm({
               )}
             />
             <div className="flex gap-2">
-              <Button type="submit" className="cursor-pointer">
-                {mode === "edit" ? "Update" : "Create"}
+              <Button type="submit" className="cursor-pointer" disabled={isSubmitting}>
+                {isSubmitting ? "Menyimpan..." : (mode === "edit" ? "Update" : "Simpan")}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 className="cursor-pointer"
                 onClick={() => router.back()}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
