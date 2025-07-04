@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { User } from "@/datas/users";
 
 import { Button } from "@/components/ui/button";
 import { Search } from "@/components/ui/search";
@@ -27,27 +28,33 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import users, { User } from "../../../datas/users";
+interface UsersTableProps {
+  users: User[];
+  onDelete: (userId: string) => void;
+}
 
-export function UsersTable() {
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortedUsers, setSortedUsers] = useState<User[]>(users);
-
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const [currentPage, setCurrentPage] = useState<number>(1);
+export function UsersTable({ users, onDelete }: UsersTableProps) {
+   const [displayUsers, setDisplayUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedProducts = sortedUsers.slice(startIndex, endIndex);
 
+  // useEffect untuk menangani filter dan sinkronisasi data dari props
   useEffect(() => {
-    setSortedUsers(filteredUsers);
-  }, [searchQuery]);
+    const filtered = users.filter(user =>
+      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setDisplayUsers(filtered);
+    setCurrentPage(1);
+  }, [users, searchQuery]);
+
+  // Logika Pagination
+  const totalPages = Math.ceil(displayUsers.length / itemsPerPage);
+  const paginatedUsers = displayUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div>
@@ -62,8 +69,8 @@ export function UsersTable() {
       <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
         {/* Search Bar Row */}
         <Search
-          placeholder="Search (Name/Email)"
-           onSearch={(value) => setSearchQuery(value)}
+          placeholder="Search (Username/Email)"
+          onSearch={setSearchQuery}
           className="max-w-sm"
         />
         <Table>
@@ -71,39 +78,38 @@ export function UsersTable() {
             <TableRow>
               <TableHead>
                 Username
-                <SortButton<User>
-                  data={sortedUsers}
-                  sortKey="name"
-                  onSort={setSortedUsers}
-                />
+                <SortButton<User> data={displayUsers} sortKey="username" onSort={setDisplayUsers} />
               </TableHead>
-              <TableHead>Email</TableHead>
-              {/* <TableHead>Phone</TableHead> */}
-              {/* <TableHead>Address</TableHead> */}
-              <TableHead className="text-center">Role</TableHead>
-              {/* <TableHead className="text-center">Is Owner</TableHead> */}
+              <TableHead>
+                Email
+                <SortButton<User> data={displayUsers} sortKey="email" onSort={setDisplayUsers} />
+              </TableHead>
+              <TableHead className="text-center">Roles</TableHead>
+              <TableHead className="text-center">Outlet</TableHead>
               <TableHead className="text-center">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedUsers.length > 0 ? (
-              sortedUsers.map((user: User) => (
+            {paginatedUsers.length > 0 ? (
+              paginatedUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
+                  <TableCell className="font-semibold">{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  {/* <TableCell>{user.phone}</TableCell> */}
-                  {/* <TableCell>{user.address}</TableCell> */}
-                  <TableCell className="text-center">{user.role}</TableCell>
-                  {/* <TableCell className="text-center">{user.isOwner ? "YES" : "NO"}</TableCell> */}
+                  <TableCell>
+                    {user.roles.length > 0
+                      ? user.roles.map(role => role.name).join(', ')
+                      : <span className="text-xs text-muted-foreground">No Roles</span>
+                    }
+                  </TableCell>
+                  {/* Gunakan optional chaining (?.) untuk mengakses data outlet dengan aman */}
+                  <TableCell>{user.outlet?.outlet_name || 'N/A'}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex gap-x-2 justify-center">
                       <Button asChild type="button" className="w-18">
-                      <Link href={`/user-management/user/${user.id}/edit`}>
-                        Edit
-                      </Link>
-                    </Button>
-                      <Button className="w-18 bg-red-500 hover:bg-red-500/90">
-                        Delete 
+                        <Link href={`/user-management/user/${user.id}/edit`}>Edit</Link>
+                      </Button>
+                      <Button type="button" className="w-18 cursor-pointer" variant="destructive" onClick={() => onDelete(user.id)}>
+                        Delete
                       </Button>
                     </div>
                   </TableCell>
@@ -111,47 +117,46 @@ export function UsersTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  No user found.
+                <TableCell colSpan={5} className="text-center h-24">
+                  No users found for "{searchQuery}".
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
         {/* Pagination */}
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
+        {totalPages > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
                   href="#"
-                  isActive={currentPage === i + 1}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentPage(i + 1);
-                  }}
-                >
-                  {i + 1}
-                </PaginationLink>
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                />
               </PaginationItem>
-            ))}
-
-
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(i + 1);
+                    }}
+                  >
+                     {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </div>
   );

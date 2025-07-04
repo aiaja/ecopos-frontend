@@ -1,62 +1,41 @@
 import { z } from "zod";
+import { Category } from "./categories";
 
-export const productSchema = z.object({
-  hero_images: z.any().optional(),
-  name: z.string().min(2, { message: "Name is required" }),
-  category_id: z.string().nullable(),
-  stock: z.coerce.number().min(0, { message: "Stock is required" }),
-  unit: z.string().optional(),
-  initial_price: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Initial price must be a number" }).transform(val => parseFloat(val).toString()),
-  selling_price: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Selling price must be a number" }).transform(val => parseFloat(val).toString()),
-  is_non_stock: z.boolean().optional(),
-  outlet_id: z.string().optional(),
-  id: z.string().optional(),
-  // created_at: z.date().optional(),
-  // updated_at: z.date().nullable().optional(),
-  net_profit: z.number().optional(),
-  category: z.object({
-    id: z.string(),
-    name: z.string(),
-  }).optional(),
-});
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-export interface Product {
-  id: string;
-  outlet_id: string;
-  category_id: string | null;
+export type Product = {
+  id?: string;
   name: string;
   stock: number;
-  is_non_stock: boolean;
   initial_price: string;
   selling_price: string;
-  unit: string | null;
+  unit: string;
   hero_images: string | null;
-  // created_at: string;
-  // updated_at: string | null;
-  net_profit?: number;
-  category: {
-    id: string;
-    name: string;
-  };
-}
+  is_non_stock: boolean;
+  outlet_id?: string;
+  category_id: string;
+  category?: Category;
+};
 
-export function netProfit(product: Product): number | undefined {
-  const initialPrice = parseFloat(product.initial_price);
+export const productSchema = z.object({
+  name: z.string().min(3, "Product name must be at least 3 characters."),
+  category_id: z.string().min(1, "Please select a category."),
+  stock: z.coerce.number().int().min(0, "Stock must be a non-negative integer."),
+  unit: z.string().min(1, "Unit wajib diisi."),
+  initial_price: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, { message: "Initial price must be a valid number." }),
+  selling_price: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, { message: "Selling price must be a valid number." }),
+  is_non_stock: z.boolean(),
+  hero_images: z
+    .any()
+    .optional()
+    .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_FILE_SIZE, `Max image size is 5MB.`)
+    .refine((files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type), "Only .jpg, .jpeg, .png and .webp formats are supported.")
+});
+
+export const netProfit = (product: Product): number => {
   const sellingPrice = parseFloat(product.selling_price);
-
-  if (!isNaN(initialPrice) && !isNaN(sellingPrice)) {
-    return sellingPrice - initialPrice;
-  }
-  else {
-    return undefined;
-  }
-}
-
-
-  // name: z.string().min(2, { message: "Name is required" }),
-  // categoryId: z.string().min(1, { message: "Category is required" }),
-  // stock: z.coerce.number().min(0, { message: "Stock is required" }),
-  // unit: z.string().optional(),
-  // initialPrice: z.coerce.number().min(0, { message: "Initial price is required" }),
-  // sellingPrice: z.coerce.number().min(0, { message: "Selling price is required" }),
-  // nonStock: z.boolean().optional(),
+  const initialPrice = parseFloat(product.initial_price);
+  if (isNaN(sellingPrice) || isNaN(initialPrice)) return 0;
+  return sellingPrice - initialPrice;
+};
