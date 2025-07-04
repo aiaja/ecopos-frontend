@@ -1,10 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import {
-  addToCartSchema,
-  addToOpenBillSchema,
-  ProductCard,
-} from "@/datas/productCards";
+import { addToCartSchema, addToOpenBillSchema, ProductCard } from "@/datas/productCards";
 import { Search } from "@/components/ui/search";
 import { ScrollArea } from "../../ui/scroll-area";
 import { Separator } from "../../ui/separator";
@@ -45,12 +41,12 @@ export function ProductCards({
 
   const filteredProductCards = productCards
     ? productCards.filter((productCard: ProductCard) => {
-        const query = searchQuery.toLowerCase();
-        return (
-          productCard.name.toLowerCase().includes(query) ||
-          productCard.id.toString().includes(query)
-        );
-      })
+      const query = searchQuery.toLowerCase();
+      return (
+        productCard.name.toLowerCase().includes(query) ||
+        productCard.id.toString().includes(query)
+      );
+    })
     : [];
 
   const [sortedProductCards, setSortedProductCards] =
@@ -62,7 +58,7 @@ export function ProductCards({
 
   async function handleUpdateCart(values: z.infer<typeof addToOpenBillSchema>) {
     try {
-      const updateBill = {
+       const updateBill = {
         product_id: values.productId,
         qty: values.qty,
       };
@@ -83,6 +79,7 @@ export function ProductCards({
       alert("An error occurred while processing your request.");
     }
   }
+
 
   async function handleAddToCart(values: z.infer<typeof addToCartSchema>) {
     try {
@@ -191,14 +188,9 @@ export function ProductCards({
         <ScrollArea className="p-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {sortedProductCards.map((productCard) => (
-              <Card
-                key={productCard.id}
-                className="min-w-0 p-2 flex flex-col gap-2"
-              >
+              <Card key={productCard.id} className="min-w-0 p-2 flex flex-col gap-2">
                 <CardHeader className="px-2">
-                  <CardTitle className="text-sm truncate">
-                    {productCard.name}
-                  </CardTitle>
+                  <CardTitle className="text-sm truncate">{productCard.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="px-2 flex flex-col items-center">
                   <img
@@ -221,13 +213,13 @@ export function ProductCards({
                     onClick={() =>
                       mode === "update"
                         ? handleUpdateCart({
-                            productId: productCard.id.toString(),
-                            qty: 1,
-                          })
+                          productId: productCard.id.toString(),
+                          qty: 1,
+                        })
                         : handleAddToCart({
-                            productId: productCard.id.toString(),
-                            quantity: 1,
-                          }).then(() => window.location.reload())
+                          productId: productCard.id.toString(),
+                          quantity: 1,
+                        }).then(() => window.location.reload())
                     }
                   >
                     {mode === "update" ? "Update Cart" : "Add to Cart"}
@@ -236,8 +228,9 @@ export function ProductCards({
               </Card>
             ))}
           </div>
+
         </ScrollArea>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
