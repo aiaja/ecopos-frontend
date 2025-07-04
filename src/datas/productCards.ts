@@ -13,6 +13,11 @@ export const addToCartSchema = z.object({
     quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
 });
 
+export const addToOpenBillSchema = z.object({
+    productId: z.string().min(1, { message: "Product ID is required" }),
+    qty: z.number().min(1, { message: "Quantity must be at least 1" }),
+});
+
 // Mock product data
 export interface ProductCard {
     id: string;

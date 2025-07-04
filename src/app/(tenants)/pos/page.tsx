@@ -76,7 +76,7 @@ export default function Home() {
     <div className="flex h-screen w-full">
       {/* Left Section: Product Cards */}
       <div className="w-3/5">
-        <ProductCards productCards={productCards} />
+        <ProductCards productCards={productCards} mode={mode} id_openBill={openBillId} />
       </div>
 
       {/* Right Section: Order Details */}
@@ -90,6 +90,7 @@ export default function Home() {
             orders={mockOrders}
             mode={mode}  
             selectedOpenBill={selectedOpenBill}  
+            transaction={null}
           />
         </ScrollArea>
       </div>

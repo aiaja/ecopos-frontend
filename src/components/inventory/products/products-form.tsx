@@ -7,10 +7,11 @@ import { z } from "zod";
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
-// Import "Single Source of Truth" kita
+// Import "Single Source of Truth"
 import { Product } from "@/datas/products";
 import { productSchema } from "@/datas/products";
 import { Category } from "@/datas/categories";
+import { toast } from 'sonner';
 
 // Import Service Layer
 import { ProductService } from '@/services/products';
@@ -18,9 +19,22 @@ import { CategoryService } from "@/services/category";
 
 // Import Komponen UI dari shadcn/ui
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Select,
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProductsFormProps {
@@ -31,16 +45,14 @@ interface ProductsFormProps {
 export function ProductsForm({ mode = "create", productId }: ProductsFormProps) {
     const router = useRouter();
 
-    // State tidak berubah
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [nameWarning, setNameWarning] = useState<string>("");
     const [netProfitValue, setNetProfitValue] = useState<number>(0);
-    const [isSubmitting, setIsSubmitting] = useState(false); // State untuk loading submit
+    // State isSubmitting manual tidak lagi diperlukan
 
-    // Setup form tidak berubah
     const form = useForm<z.infer<typeof productSchema>>({
         resolver: zodResolver(productSchema),
         defaultValues: {
@@ -55,26 +67,27 @@ export function ProductsForm({ mode = "create", productId }: ProductsFormProps) 
         },
     });
     
-    // Watchers tidak berubah
     const watchedName = form.watch("name");
     const watchedInitialPrice = form.watch("initial_price");
     const watchedSellingPrice = form.watch("selling_price");
     const watchedHeroImages = form.watch("hero_images");
 
-    // useEffect hooks tidak berubah
+    // useEffect untuk mengambil data awal (dependencies)
     useEffect(() => {
         const fetchDependencies = async () => {
             setIsLoading(true);
             try {
                 const outletId = localStorage.getItem("outlet_id") || "";
+                // Ambil kategori dan produk secara bersamaan
                 const [categoriesData, productsData] = await Promise.all([
                     CategoryService.getCategories(outletId),
-                    ProductService.getProducts(outletId)
+                    ProductService.getProducts(outletId) // Untuk validasi nama duplikat
                 ]);
 
                 setCategories((categoriesData || []).filter((cat): cat is Category & { id: string } => typeof cat.id === "string"));
                 setAllProducts(productsData || []);
 
+                // Jika mode edit, ambil data spesifik produknya
                 if (mode === "edit" && productId) {
                     const productData = await ProductService.getProductById(outletId, productId);
                     form.reset({
@@ -90,16 +103,17 @@ export function ProductsForm({ mode = "create", productId }: ProductsFormProps) 
                         setPreviewImage(productData.hero_images);
                     }
                 }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                alert("Failed to load initial data for the form.");
+            } catch (error: any) {
+                toast.error(`Gagal memuat data: ${error.message}`);
+                router.back(); // Kembalikan ke halaman sebelumnya jika data penting gagal dimuat
             } finally {
                 setIsLoading(false);
             }
         };
         fetchDependencies();
-    }, [mode, productId, form]);
+    }, [mode, productId, form, router]);
 
+    // useEffect untuk validasi nama duplikat (tidak berubah)
     useEffect(() => {
         const name = watchedName?.trim().toLowerCase();
         if (!name) {
@@ -112,6 +126,7 @@ export function ProductsForm({ mode = "create", productId }: ProductsFormProps) 
         setNameWarning(isDuplicate ? "Nama produk sudah ada, silakan ganti." : "");
     }, [watchedName, allProducts, mode, productId]);
     
+    // useEffect untuk preview gambar (tidak berubah)
     useEffect(() => {
         if (watchedHeroImages && watchedHeroImages.length > 0) {
             const file = watchedHeroImages[0];
@@ -125,15 +140,15 @@ export function ProductsForm({ mode = "create", productId }: ProductsFormProps) 
         }
     }, [watchedHeroImages, mode]);
 
+    // useEffect untuk menghitung net profit (tidak berubah)
     useEffect(() => {
         const initial = parseFloat(watchedInitialPrice || "0");
         const selling = parseFloat(watchedSellingPrice || "0");
         setNetProfitValue(selling - initial);
     }, [watchedInitialPrice, watchedSellingPrice]);
 
-    // Fungsi submit utama
+
     async function performSubmit(values: z.infer<typeof productSchema>) {
-        setIsSubmitting(true);
         const formData = new FormData();
         formData.append("name", values.name);
         formData.append("category_id", values.category_id);
@@ -141,57 +156,75 @@ export function ProductsForm({ mode = "create", productId }: ProductsFormProps) 
         formData.append("initial_price", values.initial_price);
         formData.append("selling_price", values.selling_price);
         formData.append("is_non_stock", values.is_non_stock ? "1" : "0");
-        if (values.unit) {
-            formData.append("unit", values.unit);
-        }
+        if (values.unit) formData.append("unit", values.unit);
         if (values.hero_images && values.hero_images.length > 0) {
             formData.append("hero_images", values.hero_images[0]);
+        }
+        
+
+        if (mode === 'edit') {
+            formData.append("_method", "POST");
         }
 
         try {
             const outletId = localStorage.getItem("outlet_id") || "";
             if (mode === "create") {
                 await ProductService.createProduct(outletId, formData);
-                alert("Product created successfully");
             } else if (mode === "edit" && productId) {
                 await ProductService.updateProduct(outletId, productId, formData);
-                alert("Product updated successfully");
             }
-            return true; // Sukses
-        } catch (error) {
-            console.error("Error submitting form:", error);
-            alert("An error occurred while submitting the form. Check console for details.");
-            return false; // Gagal
-        } finally {
-            setIsSubmitting(false);
+        } catch (error: any) {
+            // Lempar error agar bisa ditangkap oleh toast.promise
+            throw new Error(error.message); 
         }
     }
     
     async function handleSubmitAndRoute(values: z.infer<typeof productSchema>) {
-        const success = await performSubmit(values);
-        if (success) {
-            router.push('/inventory/products');
-            router.refresh();
-        }
+        const promise = () => performSubmit(values);
+
+        toast.promise(promise, {
+            loading: 'Menyimpan data...',
+            success: () => {
+                router.push('/inventory/products');
+                const message = mode === 'edit' ? 'Produk berhasil diperbarui!' : 'Produk baru berhasil dibuat!';
+                return message;
+            },
+            error: (error) => error.message, // Menampilkan pesan error dari backend
+        });
     }
 
-    // LOGICAL FIX: Fungsi baru untuk tombol "Create & create another"
     async function handleCreateAndNew(values: z.infer<typeof productSchema>) {
-        const success = await performSubmit(values);
-        if (success) {
-            // Reset form ke nilai awal
-            form.reset();
-            setPreviewImage(null);
-            // Ambil lagi daftar produk untuk validasi duplikat yang akurat
-            const outletId = localStorage.getItem("outlet_id") || "";
-            const productsData = await ProductService.getProducts(outletId);
-            setAllProducts(productsData || []);
-        }
+        const promise = () => performSubmit(values);
+
+        toast.promise(promise, {
+            loading: 'Menyimpan data...',
+            success: async () => {
+                form.reset(); // Reset form setelah sukses
+                setPreviewImage(null);
+                // Refresh data produk untuk validasi duplikat
+                try {
+                    const outletId = localStorage.getItem("outlet_id") || "";
+                    const productsData = await ProductService.getProducts(outletId);
+                    setAllProducts(productsData || []);
+                } catch (error: any) {
+                    toast.error("Gagal refresh daftar produk: " + error.message);
+                }
+                return "Produk berhasil dibuat! Silakan buat produk baru.";
+            },
+            error: (error) => error.message,
+        });
     }
 
     if (isLoading && mode === 'edit') {
         return <div className="flex justify-center items-center h-screen">Loading product data...</div>;
     }
+
+    // Ambil isSubmitting dari formState untuk menonaktifkan tombol secara otomatis
+    const { isSubmitting } = form.formState;
+
+    // Variabel untuk membuat teks tombol lebih rapi
+    const submitButtonText = mode === 'edit' ? "Update" : "Simpan";
+    const submittingText = "Menyimpan...";
 
 return (
     <div>
@@ -435,32 +468,33 @@ return (
 
                     {/* Action buttons */}
                     <div className="flex gap-2 pt-4 border-t">
-                        <Button className="cursor-pointer" type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : (mode === "edit" ? "Update" : "Create")}
-                        </Button>
-                        {mode !== "edit" && (
+                            <Button className="cursor-pointer" type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? submittingText : submitButtonText}
+                            </Button>
+                            {mode !== "edit" && (
+                                <Button
+                                    className="cursor-pointer"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={form.handleSubmit(handleCreateAndNew)}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? submittingText : 'Simpan & Buat Baru'}
+                                </Button>
+                            )}
                             <Button 
-                                type="button"
+                                className="cursor-pointer"
+                                type="button" 
                                 variant="outline"
-                                onClick={form.handleSubmit(handleCreateAndNew)}
+                                onClick={() => router.back()}
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? 'Saving...' : 'Create & create another'}
+                                Batal
                             </Button>
-                        )}
-                        <Button 
-                            className="cursor-pointer"
-                            type="button" 
-                            variant="outline"
-                            onClick={() => router.back()}
-                            disabled={isSubmitting}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                </form>
-            </Form>
+                        </div>
+                    </form>
+                </Form>
+            </div>
         </div>
-    </div>
-);
+    );
 }
