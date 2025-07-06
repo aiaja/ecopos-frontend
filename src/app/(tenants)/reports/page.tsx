@@ -9,61 +9,65 @@ import { ReportService } from "@/services/reports";
 export default function Home() {
   const [reportData, setReportData] = useState<ReportsData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<"Selling" | "Cashier">("Selling");
+  const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
 
-  const handleGenerateReport = async (startDate: string, endDate: string) => {
+  const handleTabChange = (tab: "Selling" | "Cashier") => {
+    setSelectedTab(tab);
+    setReportData(null); // Clear previous data when switching tabs
+  };
+
+  const handleDateChange = (startDate: string, endDate: string) => {
+    setDateRange({ startDate, endDate });
+  };
+
+  const handleGenerateReport = async () => {
     setLoading(true);
-    console.log("Generating report from", startDate, "to", endDate);
-    // Call the service to generate the report
     try {
-      const response = await ReportService.generateReportSellings({
-        start_date: startDate,
-        end_date: endDate,
-      })
-      if (response) {
-        setReportData(response);
+      let response: ReportsData | null = null;
+      if (selectedTab === "Selling") {
+        response = await ReportService.generateReportSellings({
+          start_date: dateRange.startDate,
+          end_date: dateRange.endDate,
+        });
       } else {
-        console.error("Failed to generate report");
+        response = await ReportService.generateReportCashier({
+          start_date: dateRange.startDate,
+          end_date: dateRange.endDate,
+        });
       }
-      console.log("Report generated successfully:", response);
+      setReportData(response);
     } catch (error) {
       console.error("Error generating report:", error);
       setReportData(null);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  const handlePrintReport = () => {
-
-  }
-
-  const handleDownloadReport = async (startDate: string, endDate: string) => {
+  const handleDownloadReport = async () => {
     setLoading(true);
-    const response = await ReportService.exportsReportSellings({
-      start_date: startDate,
-      end_date: endDate,
-    });
-    if (response) {
-      console.log("Report downloaded successfully");
-    } else {
-      console.error("Failed to download report");
+    try {
+      if (selectedTab === "Selling") {
+        await ReportService.exportsReportSellings({
+          start_date: dateRange.startDate,
+          end_date: dateRange.endDate,
+        });
+      } else {
+        await ReportService.exportsReportCashier({
+          start_date: dateRange.startDate,
+          end_date: dateRange.endDate,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to download report", error);
     }
     setLoading(false);
-  }
+  };
 
-  const handleTabChange = (value: string) => {
-    // Logic to handle tab change
-    console.log("Tab changed to", value);
-
-  }
-
-  const handleDateChange = (startDate: string, endDate: string) => {
-    // Logic to handle date change
-    console.log("Date range changed to", startDate, "to", endDate);
-  }
-
-
-
+  const handlePrintReport = () => {
+    // Implement print logic if needed
+  };
 
   if (loading) {
     return (
@@ -72,14 +76,18 @@ export default function Home() {
       </div>
     );
   }
+
   return (
     <div className="flex flex-col gap-4 p-4">
       <h1 className="px-6 text-xl font-bold">Reports Tabs</h1>
       <ReportsTabs
+        selectedTab={selectedTab}
+        onTabChange={handleTabChange}
+        dateRange={dateRange}
+        onDateChange={handleDateChange}
         onGenerateReport={handleGenerateReport}
         onPrintReport={handlePrintReport}
         onDownloadReport={handleDownloadReport}
-        type="Selling"
       />
       <ReportsView reportData={reportData} />
     </div>
