@@ -3,7 +3,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import NoteDialog from "./NoteDialog";
-import VoucherDialog from "./VoucherDialog";
 import { PlusIcon } from "@/components/common/Plus";
 import CartCards from "./CartCards";
 import { CartService } from "@/services/pos/cart";
@@ -16,6 +15,8 @@ import { OpenBillsService } from "@/services/openBills";
 import TransactionsDialog from "../transaction-dialog";
 import { TransactionService } from "@/services/transaction";
 import { Transaction } from "@/datas/transaction";
+import { Voucher } from "@/datas/voucher";
+import { VoucherService } from "@/services/voucher";
 
 interface OrderDetailsProps {
   orders?: any[]; // list of orders (OpenBills products)
@@ -32,14 +33,35 @@ export function OrderDetails({
 }: OrderDetailsProps) {
   const router = useRouter();
 
-  const [isNoteDialogOpen, setNoteDialogOpen] = useState(false);
-  const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
   const [isOpenBillsDialogOpen, setOpenBillsDialogOpen] = useState(false);
   const [isTransactionsDialogOpen, setTransactionsDialogOpen] = useState(false);
 
   const [cartItem, setCartItem] = useState<CartItem[]>([]);
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [orderDetails, setOrderDetails] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchVouchers = async () => {
+        try {
+          const response = await VoucherService.getVouchers(
+            localStorage.getItem("outlet_id") || ""
+          );
+          console.log("Voucher fetched:", response);
+          if (response) {
+            setVouchers(response as Voucher[]);
+          } else {
+            console.error("Failed to fetch vouchers");
+          }
+        } catch (error) {
+          console.error("Error fetching vouchers:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      useEffect(() => {
+        fetchVouchers();
+      }, []);
 
   const fetchCartItems = async () => {
     try {
@@ -203,43 +225,6 @@ export function OrderDetails({
 
       <Card>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <p>Note</p>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setNoteDialogOpen(true);
-              }}
-            >
-              <PlusIcon />
-            </a>
-            <NoteDialog
-              isOpen={isNoteDialogOpen}
-              onClose={() => setNoteDialogOpen(false)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <p>Voucher</p>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setVoucherDialogOpen(true);
-              }}
-            >
-              <PlusIcon />
-            </a>
-            <VoucherDialog
-              isOpen={isVoucherDialogOpen}
-              onClose={() => setVoucherDialogOpen(false)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent>
           <div className="flex justify-between">
             <p>Sub Total</p>
             <p>{SubTotal}</p>
@@ -247,10 +232,6 @@ export function OrderDetails({
           <div className="flex justify-between">
             <p>Tax</p>
             <p>{Tax}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Discount</p>
-            <p>0</p>
           </div>
           <div className="flex justify-between">
             <p>Total</p>
@@ -289,6 +270,7 @@ export function OrderDetails({
           transaction={transaction}
           onSubmit={handleSubmitTransactions}
           mode={mode}
+          vouchers={vouchers}
         />
       </div>
     </div>

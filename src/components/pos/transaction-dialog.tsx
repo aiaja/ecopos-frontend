@@ -5,15 +5,46 @@ import { Input } from "../ui/input";
 import { Transaction } from "@/datas/transaction";
 import { TransactionService } from "@/services/transaction";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { VoucherService } from "@/services/voucher";
+import { Voucher } from "@/datas/voucher";
+
 interface TransactionsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   transaction: Transaction | null; // Ubah prop Transaction sesuai dengan interface yang benar
   onSubmit: (transaction: Transaction) => void;
   mode: "create" | "update";
+  vouchers: Voucher[];
 }
 
-const TransactionsDialog = ({ isOpen, onClose, transaction, onSubmit, mode }: TransactionsDialogProps) => {
+const TransactionsDialog = ({ isOpen, onClose, transaction, onSubmit, mode, vouchers }: TransactionsDialogProps) => {
+  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const filteredVouchers = vouchers
+    ? vouchers.filter((voucher: Voucher) => {
+        const query = searchQuery.toLowerCase();
+        return (
+          voucher.name.toLowerCase().includes(query) ||
+          voucher.code.toLowerCase().includes(query)
+        );
+      })
+    : [];
+
+  const [sortedVouchers, setSortedVouchers] =
+    useState<Voucher[]>(filteredVouchers);
+
+  useEffect(() => {
+    setSortedVouchers(filteredVouchers);
+  }, [searchQuery]);
+
   const [customerName, setCustomerName] = useState<string>("");
   const [formData, setFormData] = useState<Transaction>({
     date: "",
@@ -113,6 +144,25 @@ const TransactionsDialog = ({ isOpen, onClose, transaction, onSubmit, mode }: Tr
             required
           />
         </div>
+        <div className="flex flex-col gap-4">
+          <Select onValueChange={(value) => setSelectedVoucher(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortedVouchers.length > 0 ? (
+                sortedVouchers.map((voucher: Voucher) => (
+                  <SelectItem key={voucher.code} value={voucher.code}>
+                    {voucher.code}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-voucher">No Voucher Available</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel

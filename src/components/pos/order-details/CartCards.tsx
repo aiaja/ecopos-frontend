@@ -23,6 +23,7 @@ import { OpenBillsService } from "@/services/openBills";
 import { OpenBills } from "@/datas/openBills";
 
 export default function CartCards({ cartItems, openBills }: { cartItems?: CartItem[], openBills?: OpenBills[] }) {
+  const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const [mode, setMode] = useState<'create' | 'update'>('create');
   
   const updateCartItem = async (item: CartItem) => {
@@ -39,6 +40,8 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
       }
     } catch (error) {
       console.error("Error updating cart item:", error);
+    }finally {
+      setLoadingItemId(null);
     }
   };
 
@@ -156,6 +159,7 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
                         min={1}
                         value={item.quantity || item.qty}
                         onChange={async (e) => {
+                          setLoadingItemId(item.id);
                           const newQuantity = Number(e.target.value);
                           if (
                             newQuantity > 0 &&
@@ -165,8 +169,8 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
                               ...item,
                               quantity: newQuantity,
                             });
-                            window.location.reload();
                           }
+                            setLoadingItemId(null);
                         }}
                       />
                     </TableCell>
