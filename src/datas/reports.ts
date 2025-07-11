@@ -47,6 +47,47 @@ export interface SellingReport {
     };
 }
 
+export interface CashierReport {
+    id: string;
+    cashier_id: string;
+    outlet_id: string;
+    date: string;
+    note: string;
+    voucher_id: string | null;
+    discout_price: string;
+    code: string;
+    payed_money: string;
+    money_changes: string;
+    total_price: string;
+    total_cost: string;
+    paymenr_method_id: string;
+    tax: string;
+    tax_price: string;
+    total_qty: string;
+    created_at: string;
+    updated_at: string;
+    transaction_details: {
+        id: string;
+        code: string;
+        transaction_id: string;
+        product: {
+            name: string;
+        };
+        price: string;
+        cost: string;
+        qty: string;
+        created_at: string;
+        updated_at: string;    
+    }[];
+    payment_method: {
+        id: string;
+        outlet_id: string;
+        name: string;
+        created_at: string;
+        updated_at: string | null;
+    }
+}
+
 export interface ReportFooter {
     total_cost: string;
     total_gross: string;
@@ -61,11 +102,21 @@ export interface ReportFooter {
     total_qty: number;
 }
 
-export interface ReportsData {
+export interface ReportsDataSellings {
+    type: "Selling";
     header: ReportHeader;
     sellings: SellingReport[];
     footer: ReportFooter;
 }
+export interface ReportsDataCashier {
+    type: "Cashier";
+    header: ReportHeader;
+    cashier: CashierReport[];
+    footer: ReportFooter;
+}
+
+export type ReportsData = ReportsDataSellings | ReportsDataCashier;
+
 
 export interface ReportResponse {
     status: string;
