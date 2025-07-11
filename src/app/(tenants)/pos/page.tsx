@@ -90,6 +90,7 @@ export default function Home() {
             orders={mockOrders}
             mode={mode}  
             selectedOpenBill={selectedOpenBill}  
+            transaction={null}
           />
         </ScrollArea>
       </div>

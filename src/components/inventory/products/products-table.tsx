@@ -2,51 +2,75 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image"; // Penting untuk menampilkan gambar
-import { Product, netProfit } from "@/datas/products"; // Pastikan path ini benar
+import Image from "next/image";
+import { Product, netProfit } from "@/datas/products";
 
-// Import komponen UI
+// Komponen UI
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Search } from "@/components/ui/search";
 import { SortButton } from "@/components/ui/sort";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from "@/components/ui/pagination";
 
-// Helper function untuk format mata uang, bisa juga ditaruh di file terpisah (misal: src/utils/formatters.ts)
+// Format untuk rupiah
 const formatCurrency = (amount: number | string) => {
-    const numberAmount = Number(amount);
-    if (isNaN(numberAmount)) return "N/A";
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(numberAmount);
+  const numberAmount = Number(amount);
+  if (isNaN(numberAmount)) return "N/A";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0
+  }).format(numberAmount);
 };
 
 interface ProductsTableProps {
   products: Product[];
   onDelete: (productId: string) => void;
-  onToggleStock: (productId: string, newStatus: boolean) => void; 
+  onToggleStock: (productId: string, newStatus: boolean) => void;
 }
 
-export default function ProductsTable({ products, onDelete, onToggleStock }: ProductsTableProps) {
-  // PERBAIKAN LOGIKA STATE: Kita gunakan satu state utama `displayProducts`
+export default function ProductsTable({
+  products,
+  onDelete,
+  onToggleStock
+}: ProductsTableProps) {
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // useEffect untuk meng-handle filter dan sinkronisasi data dari props
+  // Untuk memfilter data kapanpun data utama atau query berubah
   useEffect(() => {
-    const filtered = products.filter(product =>
+      const filtered = products.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.id ?? "").toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setDisplayProducts(filtered);
-    setCurrentPage(1); // Selalu kembali ke halaman 1 setiap kali filter/data berubah
-  }, [products, searchQuery]);
+        (product.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setDisplayProducts(filtered);
+  }, [products, searchQuery]); 
+
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [searchQuery]);
+
+  const handleSort = (sortedData: Product[]) => {
+    setDisplayProducts(sortedData);
+    setCurrentPage(1);
+  };
 
   const totalPages = Math.ceil(displayProducts.length / itemsPerPage);
   const paginatedProducts = displayProducts.slice(
@@ -63,110 +87,96 @@ export default function ProductsTable({ products, onDelete, onToggleStock }: Pro
         </Button>
       </div>
 
-      <div className="m-6 px-6 bg-white border rounded-lg shadow-sm">
+      <div className="m-6 px-4 bg-primary-foreground text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
         <div className="py-6 space-y-4">
           <Search
-            placeholder="Search (ID/Name/Category)"
+            placeholder="Search (Name / Category)"
             onSearch={setSearchQuery}
             className="max-w-md"
           />
-          
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50/50">
-                  <TableHead className="font-semibold text-gray-900">
-                    ID
-                    <SortButton<Product>
-                      data={displayProducts}
-                      sortKey="id"
-                      onSort={setDisplayProducts}
-                    />
-                  </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 w-20">
+                <TableRow>
+                  <TableHead className="text-center font-bold">
                     Image
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900">
+
+                  <TableHead className="text-center font-bold">
                     Name
                     <SortButton<Product>
                       data={displayProducts}
                       sortKey="name"
-                      onSort={setDisplayProducts}
+                      onSort={handleSort} 
                     />
                   </TableHead>
 
-                  <TableHead className="font-semibold text-gray-900">
+                  <TableHead className="text-center font-bold">
                     Category
                     <SortButton<Product>
                       data={displayProducts}
                       sortKey="category.name"
-                      onSort={setDisplayProducts}
+                      onSort={handleSort}
                     />
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 text-center">
+
+                  <TableHead className="text-center font-bold">
                     Stock
                     <SortButton<Product>
                       data={displayProducts}
                       sortKey="stock"
-                      onSort={setDisplayProducts}
+                      onSort={handleSort}
                     />
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900">
+
+                  <TableHead className="text-center font-bold">
                     Unit
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 text-right">
+
+                  <TableHead className="text-center font-bold">
                     Initial Price
                     <SortButton<Product>
                       data={displayProducts}
                       sortKey="initial_price"
-                      onSort={setDisplayProducts}
+                      onSort={handleSort}
                     />
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 text-right">
+
+                  <TableHead className="text-center font-bold">
                     Selling Price
                     <SortButton<Product>
                       data={displayProducts}
                       sortKey="selling_price"
-                      onSort={setDisplayProducts}
+                      onSort={handleSort}
                     />
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 text-right">
+
+                  <TableHead className="text-center font-bold">
                     Net Profit
                     <SortButton<Product>
                       data={displayProducts}
-                      sortKey="net_profit"
-                      onSort={setDisplayProducts}
+                      valueGetter={(product) => netProfit(product)}
+                      onSort={handleSort}
                     />
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 text-center">
+
+                  <TableHead className="text-center font-bold">
                     Non-Stock
                   </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-900 text-center">
+
+                  <TableHead className="text-center font-bold">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              
+
               <TableBody>
                 {paginatedProducts.length > 0 ? (
                   paginatedProducts.map((product, index) => (
-                    <TableRow 
-                      key={product.id} 
-                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}
+                    <TableRow
+                      key={product.id}
                     >
-                      <TableCell>
-                        {product.id ?? ""}
-                      </TableCell>
-                      
                       <TableCell>
                         <div className="w-14 h-14 relative">
                           {product.hero_images ? (
@@ -184,49 +194,51 @@ export default function ProductsTable({ products, onDelete, onToggleStock }: Pro
                           )}
                         </div>
                       </TableCell>
-                      
-                      <TableCell className="font-bold text-gray-900">
+
+                      <TableCell className="font-medium text-gray-900">
                         {product.name}
                       </TableCell>
-                      
+
                       <TableCell className="text-gray-700">
-                        {product.category?.name || 'N/A'}
+                        {product.category?.name || "N/A"}
                       </TableCell>
-                      
-                      <TableCell className="text-center font-bold text-gray-900">
+
+                      <TableCell className="text-center font-medium text-gray-900">
                         {product.stock}
                       </TableCell>
-                      
+
                       <TableCell className="text-gray-700">
                         {product.unit}
                       </TableCell>
-                      
+
                       <TableCell className="text-right text-gray-900">
                         {formatCurrency(product.initial_price)}
                       </TableCell>
-                      
+
                       <TableCell className="text-right text-gray-900">
                         {formatCurrency(product.selling_price)}
                       </TableCell>
-                      
-                      <TableCell className="text-right font-bold text-gray-900">
+
+                      <TableCell className="text-right font-medium text-gray-900">
                         {formatCurrency(netProfit(product))}
                       </TableCell>
-                      
+
                       <TableCell>
                         <div className="flex justify-center">
-                          <Switch 
-                            checked={product.is_non_stock} 
-                            onCheckedChange={(newStatus) => onToggleStock(product.id ?? "", newStatus)}
+                          <Switch
+                            checked={product.is_non_stock}
+                            onCheckedChange={(newStatus) =>
+                              onToggleStock(product.id ?? "", newStatus)
+                            }
                           />
                         </div>
                       </TableCell>
-                      
+
                       <TableCell>
                         <div className="flex gap-2 justify-center">
-                          <Button 
-                            asChild 
-                            size="sm" 
+                          <Button
+                            asChild
+                            size="sm"
                             type="button"
                             className="text-xs px-3 w-15"
                           >
@@ -237,7 +249,7 @@ export default function ProductsTable({ products, onDelete, onToggleStock }: Pro
                           <Button
                             size="sm"
                             type="button"
-                            className="text-xs px-3 w-15 bg-red-500 hover:bg-red-500/90 cursor-pointer" 
+                            className="text-xs px-3 w-15 bg-red-500 hover:bg-red-500/90 cursor-pointer"
                             onClick={() => onDelete(product.id ?? "")}
                           >
                             Delete
@@ -248,7 +260,7 @@ export default function ProductsTable({ products, onDelete, onToggleStock }: Pro
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center h-24 text-gray-500">
+                    <TableCell colSpan={10} className="text-center h-24 text-gray-500">
                       No products found for "{searchQuery}".
                     </TableCell>
                   </TableRow>
@@ -271,7 +283,7 @@ export default function ProductsTable({ products, onDelete, onToggleStock }: Pro
                       className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                     />
                   </PaginationItem>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => (
                     <PaginationItem key={i}>
                       <PaginationLink
@@ -286,7 +298,7 @@ export default function ProductsTable({ products, onDelete, onToggleStock }: Pro
                       </PaginationLink>
                     </PaginationItem>
                   ))}
-                  
+
                   <PaginationItem>
                     <PaginationNext
                       href="#"

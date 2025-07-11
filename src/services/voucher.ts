@@ -58,7 +58,7 @@ const getVoucherById = async (outletId:string, id: string): Promise<Voucher> => 
         throw new Error('Voucher not found');
     }
     const data = await response.data;
-    return data.data;
+    return data;
 
 }
 

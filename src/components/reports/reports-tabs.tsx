@@ -1,91 +1,66 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Printer, Download } from "lucide-react";
-import React from "react";
 import DatePicker from "./date-picker";
+import { Card, CardContent } from "../ui/card";
 
-interface ReportTabsProps {
-  onGenerateReport: (startDate: string, endDate: string) => void;
+interface ReportsTabsProps {
+  selectedTab: "Selling" | "Cashier";
+  onTabChange: (tab: "Selling" | "Cashier") => void;
+  dateRange: { startDate: string; endDate: string };
+  onDateChange: (startDate: string, endDate: string) => void;
+  onGenerateReport: () => void;
   onPrintReport: () => void;
-  onDownloadReport: (startDate: string, endDate: string) => void;
-  type: "Selling" | "Cashier";
+  onDownloadReport: () => void;
 }
 
 export function ReportsTabs({
+  selectedTab,
+  onTabChange,
+  dateRange,
+  onDateChange,
   onGenerateReport,
   onPrintReport,
   onDownloadReport,
-  type,
-}: ReportTabsProps) {
-
-  const [selectedTab, setSelectedTab] = React.useState("Selling");
-  const [dateRange, setDateRange] = React.useState({
-    startDate: "",
-    endDate: "",
-  });
-
-  const handleGenerate = () => {
-    const { startDate, endDate } = dateRange;
-    onGenerateReport(startDate, endDate);
-  };
-
-  const handlePrint = () => {
-    onPrintReport();
-  };
-
-  const handleDownload = () => {
-    onDownloadReport(dateRange.startDate, dateRange.endDate);
+}: ReportsTabsProps) {
+  const handleTabValueChange = (value: string) => {
+    onTabChange(value as "Selling" | "Cashier");
   };
 
   const handleStartDateChange = (date: string) => {
-    setDateRange((prev) => ({ ...prev, startDate: date }));
+    onDateChange(date, dateRange.endDate);
   };
 
   const handleEndDateChange = (date: string) => {
-    setDateRange((prev) => ({ ...prev, endDate: date }));
-  }
-
+    onDateChange(dateRange.startDate, date);
+  };
 
   return (
-    <Tabs defaultValue="account" className="w-full">
+    <Tabs value={selectedTab} onValueChange={handleTabValueChange} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="Selling">Selling Report</TabsTrigger>
         <TabsTrigger value="Cashier">Cashier Report</TabsTrigger>
       </TabsList>
-      <TabsContent value="Selling">
+      <TabsContent value={selectedTab}>
         <Card>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
               <div className="space-y-1">
-                <Label htmlFor="date" className="pb-2">
-                  Pick Date Range
-                </Label>
+                <div className="pb-2">Pick Date Range</div>
                 <div className="flex gap-2">
                   <DatePicker onChange={handleStartDateChange} placeholder="Start Date" value={dateRange.startDate} />
                   <DatePicker onChange={handleEndDateChange} placeholder="End Date" value={dateRange.endDate} />
                 </div>
               </div>
               <div className="flex gap-4">
-                <Button onClick={handleGenerate}>
-                  Generate
-                </Button>
-                <Button>
+                <Button onClick={onGenerateReport}>Generate</Button>
+                <Button onClick={onPrintReport}>
                   <Printer className="w-4 h-4" />
                   Print
                 </Button>
-                <Button onClick={handleDownload}>
+                <Button onClick={onDownloadReport}>
                   <Download className="w-4 h-4" />
                   Download
                 </Button>
@@ -94,34 +69,6 @@ export function ReportsTabs({
           </CardContent>
         </Card>
       </TabsContent>
-      
-      <TabsContent value="Cashier">
-        <Card>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <div className="space-y-1">
-                <Label htmlFor="date" className="pb-2">
-                  Pick Date Range
-                </Label>
-                <div className="flex items-center">
-                  </div>
-              </div>
-              <div className="flex gap-4">
-                <Button>Generate</Button>
-                <Button>
-                  <Printer className="w-4 h-4" />
-                  Print
-                </Button>
-                <Button>
-                  <Download className="w-4 h-4" />
-                  Download
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
     </Tabs>
   );
 }

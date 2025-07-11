@@ -1,15 +1,26 @@
 
 import React, { useState } from 'react';
-import { Calendar, CalendarDays } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
+type DatePickerProps = {
+  value?: Date | string | null;
+  onChange: (date: string) => void;
+  placeholder?: string;
+};
 
-const DatePicker = ({ value, onChange, placeholder = "Pilih tanggal..." }) => {
+const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = "Pilih tanggal..." }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(value || null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    // If value is a string, try to parse it
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  });
 
-  const handleDateSelect = (date) => {
+  const handleDateSelect = (date: Date) => {
     if (!date) return;
-    // consert to 2023-10-01 format
+    // convert to 2023-10-01 format
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
     setSelectedDate(newDate);
@@ -17,7 +28,7 @@ const DatePicker = ({ value, onChange, placeholder = "Pilih tanggal..." }) => {
     setIsOpen(false);
   };
 
-  const formatDate = (date) => {
+  const formatDate = (date: Date | null) => {
     if (!date) return '';
     return date.toLocaleDateString('id-ID', {
       day: '2-digit',
@@ -31,7 +42,7 @@ const DatePicker = ({ value, onChange, placeholder = "Pilih tanggal..." }) => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    // const lastDay = new Date(currentYear, currentMonth + 1, 0); // removed unused variable
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
     

@@ -10,6 +10,7 @@ import { roleSchema } from "@/datas/roles";
 import { Permission } from '@/datas/permissions';
 import { PermissionService } from '@/services/permission';
 import { RoleService } from '@/services/role';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,32 +39,20 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
         const fetchInitialData = async () => {
             setIsLoading(true);
             try {
-                // 1. Ambil SEMUA permission yang ada untuk ditampilkan sebagai checkbox
                 const permissionsData = await PermissionService.getPermissions();
-                setAllPermissions(permissionsData);
+                setAllPermissions(permissionsData || []);
 
-                // 2. JIKA INI MODE EDIT, lakukan langkah tambahan
                 if (mode === 'edit' && rolesId) {
-                    // 3. Ambil detail SATU role yang akan diedit
                     const roleToEdit = await RoleService.getRoleById(rolesId);
-                    
-                    // 4. Isi nama role ke dalam input form
                     form.reset({ name: roleToEdit.name });
                     
-                    // 5. INI BAGIAN KUNCINYA: Memproses 'contekan' dari backend
-                    // Cek apakah backend mengirimkan array 'permissions' untuk role ini
                     if (roleToEdit.permissions && roleToEdit.permissions.length > 0) {
-                        
-                        // 6. Ambil semua NAMA dari permission yang dimiliki role tersebut
                         const initialPermissionNames = roleToEdit.permissions.map(p => p.name);
-                        
-                        // 7. Simpan nama-nama itu ke dalam state, React akan otomatis mencentang checkbox yang cocok
                         setSelectedPermissions(new Set(initialPermissionNames));
                     }
                 }
-            } catch (error) {
-                console.error("Failed to load initial data", error);
-                alert("Gagal memuat data untuk form.");
+            } catch (error: any) {
+                toast.error(`Gagal memuat data form: ${error.message}`);
                 router.back();
             } finally {
                 setIsLoading(false);
@@ -71,7 +60,7 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
         };
 
         fetchInitialData();
-    }, [mode, rolesId, form, router]); // Dependency array
+    }, [mode, rolesId, form, router]);
 
     const filteredPermissions = useMemo(() => {
         if (!searchQuery) return allPermissions;
@@ -109,29 +98,31 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
             permissions: Array.from(selectedPermissions),
         };
 
-        try {
-            if (mode === 'create') {
-                await RoleService.createRole(dataToSubmit);
-                alert('Role berhasil dibuat!');
-            } else if (mode === 'edit' && rolesId) {
-                await RoleService.updateRole(rolesId, dataToSubmit);
-                alert('Role berhasil diupdate!');
-            }
-            router.push('/user-management/role');
-            router.refresh();
-        } catch (error: any) {
-            if (error.response && error.response.data && error.response.data.errors) {
-                const validationErrors = error.response.data.errors;
-                let errorMessage = "Terdapat kesalahan validasi:\n";
-                for (const key in validationErrors) {
-                    errorMessage += `- ${validationErrors[key].join(', ')}\n`;
+        const promise = () => new Promise(async (resolve, reject) => {
+            try {
+                if (mode === 'create') {
+                    await RoleService.createRole(dataToSubmit);
+                } else if (mode === 'edit' && rolesId) {
+                    await RoleService.updateRole(rolesId, dataToSubmit);
                 }
-                alert(errorMessage);
-            } else {
-                alert("Terjadi kesalahan saat menyimpan data. Silakan coba lagi.");
+                resolve("SData berhasil disimpan!");
+            } catch (error: any) {
+                reject(error.message);
             }
-        }
+        });
+
+        toast.promise(promise, {
+            loading: 'Menyimpan role...',
+            success: () => {
+                router.push('/user-management/role');
+                router.refresh();
+                return mode === 'edit' ? 'Role berhasil diupdate!' : 'Role berhasil dibuat!';
+            },
+            error: (errorMessage) => errorMessage,
+        });
     }
+
+    const { isSubmitting } = form.formState;
 
     return (
         <div>
@@ -229,10 +220,10 @@ export function RoleForm({ mode = "create", rolesId }: RoleFormProps) {
                         </div>
 
                         <div className="flex gap-2 pt-4">
-                            <Button type="submit" className="cursor-pointer" disabled={isLoading}>
-                                {mode === "edit" ? "Update" : "Create"}
+                            <Button type="submit" className="cursor-pointer" disabled={isSubmitting || isLoading}>
+                                {isSubmitting ? "Menyimpan..." : (mode === "edit" ? "Update" : "Simpan")}
                             </Button>
-                            <Button type="button" variant="outline" className="cursor-pointer" onClick={() => router.back()}>
+                            <Button type="button" variant="outline" className="cursor-pointer" onClick={() => router.back()} disabled={isSubmitting || isLoading}>
                                 Cancel
                             </Button>
                         </div>

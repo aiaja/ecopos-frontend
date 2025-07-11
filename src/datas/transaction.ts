@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Schema untuk transaksi
-export const CreateTransactionSchema = z.object({
+export const createTransactionSchema = z.object({
     date: z.string().min(1, { message: "Date is required" }),
     note: z.string().optional(),
     voucher_id: z.string().nullable(),
