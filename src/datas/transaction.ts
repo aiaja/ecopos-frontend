@@ -38,4 +38,3 @@ export interface Transaction {
     total_qty: number;
     products: { product_id: string; qty: number }[];
 }
-

@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import React from "react";
+import React, { useCallback } from "react";
 
 import {
   Table,
@@ -21,10 +21,27 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { OpenBillsService } from "@/services/openBills";
 import { OpenBills } from "@/datas/openBills";
+import { on } from "events";
 
-export default function CartCards({ cartItems, openBills }: { cartItems?: CartItem[], openBills?: OpenBills[] }) {
+interface CartCardsProps {
+  cartItems?: CartItem[];
+  onChartUpdate?: () => void; // Callback to update cart
+  openBills?: OpenBills[];
+  onShowSuccess?: (message: string) => void; // Callback for showing success messages
+  onShowError?: (message: string) => void; // Callback for showing error messages
+}
+
+export default function CartCards({
+  cartItems = [],
+  onChartUpdate,
+  openBills = [],
+  onShowSuccess,
+  onShowError,
+}: CartCardsProps) {
+
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const [mode, setMode] = useState<'create' | 'update'>('create');
+  const [loadingDeleteItemId, setLoadingDeleteItemId] = useState<string | null>(null);
   
   const updateCartItem = async (item: CartItem) => {
     try {
@@ -33,13 +50,16 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
         item.id,
         { quantity: item.quantity }
       );
+      console.log("Response from updateCartItem:", response);
       if (response) {
-        console.log("Cart item updated successfully");
+        onShowSuccess?.("Cart item updated successfully");
+        onChartUpdate?.(); 
       } else {
         console.error("Failed to update cart item");
       }
     } catch (error) {
       console.error("Error updating cart item:", error);
+      onShowError?.("An error occurred while updating the cart item.");
     }finally {
       setLoadingItemId(null);
     }
@@ -76,17 +96,23 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
 
   const handleUpdateItem = async (item: CartItem | OpenBills) => {
     if (mode === 'create') {
-      // Handle Create Mode: Update Cart Items
       if ('quantity' in item) {
         await updateCartItem(item as CartItem);
       }
     } else if (mode === 'update') {
-      // Handle Update Mode: Update Open Bills
       if ('details' in item) {
         await updateOpenBills(item as OpenBills);
       }
     }
   };
+
+  const handleChangeQuantity = useCallback(
+    async (item: CartItem, newQuantity: number) => {
+      if (newQuantity > 0 && newQuantity !== item.quantity) {
+        setLoadingItemId(item.id);
+        handleUpdateItem({ ...item, quantity: newQuantity });
+      } 
+    },[handleUpdateItem]);
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -96,13 +122,16 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
 
   const handleDeleteCartItems = async (id: string) => {
     try {
+      setLoadingDeleteItemId(id);
       const outletId = localStorage.getItem("outlet_id") || "";
       await CartService.deleteCartItem(outletId, id);
-      alert("Cart item deleted successfully");
-      console.log(`Deleting cart item with ID: ${id}`);
+      onShowSuccess?.("Cart item deleted successfully");
+      onChartUpdate?.(); // Trigger parent to refetch cart data
     } catch (error) {
       console.error("Error deleting cart item:", error);
-      alert("An error occurred while deleting the cart item.");
+      onShowError?.("An error occurred while deleting the cart item.");
+    } finally {
+      setLoadingDeleteItemId(null);
     }
   };
 
@@ -110,11 +139,10 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
     try {
       const outletId = localStorage.getItem("outlet_id") || "";
       await CartService.clearCart(outletId);
-      alert("Cart cleared successfully");
-      console.log("Clearing cart");
+      onShowSuccess?.("Cart cleared successfully");
+      onChartUpdate?.(); // Trigger parent to refetch cart data
     } catch (error) {
-      console.error("Error clearing cart:", error);
-      alert("An error occurred while clearing the cart.");
+      onShowError?.("An error occurred while clearing the cart.");
     }
   };
 
@@ -136,7 +164,6 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
                     variant="destructive"
                     onClick={async () => {
                       await handleClearCart();
-                      window.location.reload();
                     }}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -147,6 +174,20 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
             <TableBody>
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
+                  loadingDeleteItemId === item.id ? (
+                    <TableRow key={item.id}>
+                      <TableCell colSpan={4} className="text-center text-gray-500">
+                        Deleting...
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                  loadingItemId === item.id ? (
+                    <TableRow key={item.id}>
+                      <TableCell colSpan={4} className="text-center text-gray-500">
+                        Updating...
+                      </TableCell>
+                    </TableRow>
+                  ) : (
                   <TableRow key={item.id}>
                     <TableCell className="text-gray-500">
                       {item.product?.name}
@@ -158,19 +199,16 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
                         type="number"
                         min={1}
                         value={item.quantity || item.qty}
-                        onChange={async (e) => {
+                        onChange={(e) => {
                           setLoadingItemId(item.id);
                           const newQuantity = Number(e.target.value);
                           if (
                             newQuantity > 0 &&
                             newQuantity !== item.quantity
                           ) {
-                            await handleUpdateItem({
-                              ...item,
-                              quantity: newQuantity,
-                            });
+                            handleChangeQuantity(item, newQuantity);
                           }
-                            setLoadingItemId(null);
+                          setLoadingItemId(null);
                         }}
                       />
                     </TableCell>
@@ -183,16 +221,16 @@ export default function CartCards({ cartItems, openBills }: { cartItems?: CartIt
                       <Button
                         variant="outline"
                         className="hover:bg-red-500 hover:text-white"
-                        onClick={async () => {
-                          await handleDeleteCartItems(item.id);
-                          window.location.reload();
+                        onClick={() => {
+                          handleDeleteCartItems(item.id);
                         }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))
+                  )
+                )))
               ) : (
                 <TableRow>
                   <TableCell colSpan={3} className="text-gray-500">

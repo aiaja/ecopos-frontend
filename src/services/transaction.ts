@@ -1,4 +1,3 @@
-import { CreateTransactionSchema } from "@/datas/transaction";
 import { BASE_URL } from "./BASE_URL"
 import axios from "axios";
 

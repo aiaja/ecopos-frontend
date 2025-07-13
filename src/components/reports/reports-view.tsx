@@ -506,4 +506,3 @@ const ReportsView = ({ reportData }: { reportData: ReportsData | null }) => {
 };
 
 export default ReportsView;
-
