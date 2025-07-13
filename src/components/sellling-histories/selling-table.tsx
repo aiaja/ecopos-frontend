@@ -90,7 +90,7 @@ export function SellingsTable() {
                 <TableHead>Quantity</TableHead>
                 <TableHead>Total Price</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Payment Method</TableHead>
+                {/* <TableHead>Payment Method</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,7 +101,7 @@ export function SellingsTable() {
                   <TableCell>{item.qty}</TableCell>
                   <TableCell>{parseInt(item.price) * parseInt(item.qty)}</TableCell>
                   <TableCell>{new Date(item.transaction.date).toLocaleString()}</TableCell>
-                  <TableCell>{item.transaction.payment_method_id}</TableCell>
+                  {/* <TableCell>{item.transaction.payment_method_id}</TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

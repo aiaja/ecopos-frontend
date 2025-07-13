@@ -59,7 +59,7 @@ export const OrderDetails = memo(function OrderDetails({
   const [isOpenBillsDialogOpen, setOpenBillsDialogOpen] = useState(false);
   const [isTransactionsDialogOpen, setTransactionsDialogOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
-  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(true);
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
 
   // Memoized calculations
   const calculations = useMemo(() => {

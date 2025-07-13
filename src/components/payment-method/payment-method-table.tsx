@@ -108,14 +108,14 @@ export function PaymentMethodTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>
+              {/* <TableHead>
                 ID
                 <SortButton<PaymentMethod>
                   data={sortedPaymentMethods}
                   sortKey="id"
                   onSort={setSortedPaymentMethods}
                 />
-              </TableHead>
+              </TableHead> */}
               <TableHead>
                 Payment Method Name
                 <SortButton<PaymentMethod>
@@ -131,7 +131,7 @@ export function PaymentMethodTable({
             {sortedPaymentMethods.length > 0 ? (
               sortedPaymentMethods.map((paymentMethod: PaymentMethod) => (
                 <TableRow key={paymentMethod.id}>
-                  <TableCell>{paymentMethod.id}</TableCell>
+                  {/* <TableCell>{paymentMethod.id}</TableCell> */}
                   <TableCell>{paymentMethod.name}</TableCell>
                   <TableCell className="text-center flex gap-2 justify-center">
                     <Button asChild type="button" className="w-18">
