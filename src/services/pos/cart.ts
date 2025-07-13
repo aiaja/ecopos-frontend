@@ -40,11 +40,12 @@ const updateCartItem = async (outletId: string, id: string, item: Partial<CartIt
             'Content-Type': 'application/json',
         },
     });
-    if (!response.data || !response.data.cartItem) {
+    if (!response.data) {
         throw new Error('Failed to update cart item');
     }
     const data = await response.data;
-    return data.cartItem;
+    console.log("Cart item updated successfully:", data);
+    return data;
 }
 
 
